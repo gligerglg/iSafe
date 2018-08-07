@@ -2,9 +2,12 @@ package apps.gliger.isafe;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Handler;
+import android.provider.MediaStore;
 import android.speech.tts.TextToSpeech;
 import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
@@ -21,12 +24,14 @@ import android.support.v7.widget.AppCompatButton;
 import android.support.v7.widget.CardView;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -39,11 +44,16 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.google.gson.Gson;
 import com.gordonwong.materialsheetfab.MaterialSheetFab;
 import com.jaredrummler.materialspinner.MaterialSpinner;
@@ -100,6 +110,7 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
     private ImageView img_position;
     FirebaseDatabase database;
     DatabaseReference myRef;
+    private StorageReference mStorageRef;
 
     private boolean isDayStyleEnabled = true;
     private boolean isMapDraggable = false;
@@ -149,6 +160,11 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
     private String startTime;
     private StaticIncidents staticIncidents;
     private Stopwatch stopwatch;
+    private static int camRequestCode = 100;
+    private ImageView btn_capture;
+    private Uri image_uri;
+    private MaterialDialog dialog;
+    private AlertDialog alertDialog;
 
     ///////////////////////////////
     private Queue<LatLng> pointQueue;
@@ -344,6 +360,8 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
                 setIncident("Accident");
                 incidentSheet.setState(BottomSheetBehavior.STATE_HIDDEN);
                 img_position.setVisibility(View.VISIBLE);
+
+
             }
         });
 
@@ -501,6 +519,13 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        if(requestCode==camRequestCode && resultCode==RESULT_OK){
+            image_uri = data.getData();
+            Bitmap photo = (Bitmap) data.getExtras().get("data");
+            btn_capture.setImageBitmap(photo);
+        }
+
         try{
             if(requestCode==DATA_CHECK_CODE){
                 if(resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS){
@@ -513,6 +538,7 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
             }
         }
         catch (Exception e){}
+
     }
 
 
@@ -553,6 +579,7 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
         // Initialize Firebase-database
         database = FirebaseDatabase.getInstance();
         myRef = database.getReferenceFromUrl("https://isafe-5e90f.firebaseio.com/");
+        mStorageRef = FirebaseStorage.getInstance().getReference();
 
         bearingHandler = new Handler();
         realtimeIncidentHandler = new Handler();
@@ -765,16 +792,7 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
             String hashID = generateHashID(position.latitude, position.longitude, incidentType);
             RealtimeIncident incident = new RealtimeIncident(hashID, incidentType, "ABC", getCurrentDateTime(), position.latitude, position.longitude);
 
-            if(currentIncident!=null){
-                if(!incident.getIncident_name().equals(currentIncident.getIncident_name())){
-                    myRef.child(incident.getIncident_id()).setValue(incident);
-                    score_addIncident += 25;
-                }
-                else
-                    setMessage("This incident is already exists!");
-            }
-            else
-                myRef.child(incident.getIncident_id()).setValue(incident);
+            captureIncidentImage(incident);
         }
     }
 
@@ -1188,4 +1206,78 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
         blackSpotList.add(new StaticIncidents.BlackSpot(5.9406734,80.5662053,200,"Dangerous Bend",0));
 
     }
+
+    private void captureIncidentImage(final RealtimeIncident incident)
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(MapsNavigate.this,R.style.Theme_AppCompat_Dialog_Alert);
+        View view_dialog = getLayoutInflater().inflate(R.layout.incident_photo_upload_fragment,null);
+
+        Button btn_report = view_dialog.findViewById(R.id.btn_report_incident);
+        btn_capture = view_dialog.findViewById(R.id.btn_get_image);
+
+
+        btn_capture.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                startActivityForResult(intent,camRequestCode);
+            }
+        });
+
+        btn_report.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                alertDialog.dismiss();
+                setProgressDialog("Uploading " + incident.getIncident_name() + " Incident Data");
+                if(currentIncident!=null){
+                    if(!incident.getIncident_name().equals(currentIncident.getIncident_name())){
+                        myRef.child(incident.getIncident_id()).setValue(incident);
+                        score_addIncident += 25;
+                    }
+                    else
+                        setMessage("This incident is already exists!");
+                }
+                else
+                    myRef.child(incident.getIncident_id()).setValue(incident);
+
+
+                if(image_uri!=null){
+                    StorageReference incidentRef = mStorageRef.child("Incidents").child(image_uri.getLastPathSegment());
+
+                    incidentRef.putFile(image_uri)
+                            .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                                @Override
+                                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                    // Get a URL to the uploaded content
+                                    dialog.dismiss();
+                                }
+                            })
+                            .addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception exception) {
+                                    // Handle unsuccessful uploads
+                                    // ...
+                                    dialog.dismiss();
+                                    setMessage("Uploading Incident Data Failed!");
+                                }
+                            });
+                }
+                else
+                    dialog.dismiss();
+            }
+        });
+
+        builder.setView(view_dialog);
+        alertDialog = builder.create();
+        alertDialog.show();
+
+    }
+
+    private void setProgressDialog(String message){
+        dialog = new MaterialDialog.Builder(MapsNavigate.this)
+                .content(message)
+                .progress(true,0)
+                .show();
+    }
+
 }
