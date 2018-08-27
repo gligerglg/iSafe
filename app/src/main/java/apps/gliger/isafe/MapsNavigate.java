@@ -1,9 +1,12 @@
 package apps.gliger.isafe;
 
+import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Handler;
@@ -22,6 +25,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.AppCompatButton;
 import android.support.v7.widget.CardView;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -52,6 +56,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.google.gson.Gson;
@@ -59,6 +64,10 @@ import com.gordonwong.materialsheetfab.MaterialSheetFab;
 import com.jaredrummler.materialspinner.MaterialSpinner;
 import com.tapadoo.alerter.Alerter;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -77,6 +86,7 @@ import plugins.gligerglg.locusservice.LocusService;
 
 public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback,TextToSpeech.OnInitListener {
 
+    private static final int ACTION_IMAGE_CAPTURE = 12;
     private GoogleMap mMap;
     private RouteInfo route;
     private LocusService locusService;
@@ -162,7 +172,6 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
     private Stopwatch stopwatch;
     private static int camRequestCode = 100;
     private ImageView btn_capture;
-    private Uri image_uri;
     private MaterialDialog dialog;
     private AlertDialog alertDialog;
 
@@ -521,9 +530,9 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
         if(requestCode==camRequestCode && resultCode==RESULT_OK){
-            image_uri = data.getData();
-            Bitmap photo = (Bitmap) data.getExtras().get("data");
-            btn_capture.setImageBitmap(photo);
+            Bundle extras = data.getExtras();
+            Bitmap imageBitmap = (Bitmap) extras.get("data");
+            btn_capture.setImageBitmap(imageBitmap);
         }
 
         try{
@@ -540,7 +549,6 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
         catch (Exception e){}
 
     }
-
 
     private void Init() {
 
@@ -1108,7 +1116,7 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
         snackbar.show();
     }
 
-    private void visualizeIncidentData()    //Visualize All Incidents in the Map
+    private void visualizeIncidentData()    /**Visualize All Incidents in the Map**/
     {
         if(isMapReady){
             //Real-time Data
@@ -1152,7 +1160,7 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-    private void resetDataMap() //Clear Incident data & Draw Paths
+    private void resetDataMap() /**Clear Incident data & Draw Paths**/
     {
         //Clear Map
         mMap.clear();
@@ -1240,30 +1248,28 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
                 else
                     myRef.child(incident.getIncident_id()).setValue(incident);
 
+                StorageReference incidentRef = mStorageRef.child("Incidents").child(incident.getIncident_name() + "-" + incident.getIncident_id());
+                btn_capture.setDrawingCacheEnabled(true);
+                btn_capture.buildDrawingCache();
+                Bitmap bitmap = ((BitmapDrawable) btn_capture.getDrawable()).getBitmap();
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                byte[] data = baos.toByteArray();
 
-                if(image_uri!=null){
-                    StorageReference incidentRef = mStorageRef.child("Incidents").child(image_uri.getLastPathSegment());
-
-                    incidentRef.putFile(image_uri)
-                            .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                                @Override
-                                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                    // Get a URL to the uploaded content
-                                    dialog.dismiss();
-                                }
-                            })
-                            .addOnFailureListener(new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception exception) {
-                                    // Handle unsuccessful uploads
-                                    // ...
-                                    dialog.dismiss();
-                                    setMessage("Uploading Incident Data Failed!");
-                                }
-                            });
-                }
-                else
-                    dialog.dismiss();
+                UploadTask uploadTask = incidentRef.putBytes(data);
+                uploadTask.addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception exception) {
+                        dialog.dismiss();
+                        setMessage("Uploading Incident Data Failed!");
+                    }
+                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        setMessage("Uploading Incident Data Successful!");
+                        dialog.dismiss();
+                    }
+                });
             }
         });
 

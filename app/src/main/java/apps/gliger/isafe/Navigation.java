@@ -13,7 +13,9 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.afollestad.materialdialogs.MaterialDialog;
@@ -77,6 +79,7 @@ public class Navigation extends AppCompatActivity implements OnMapReadyCallback,
     private int critical = 0;
     private int traffic = 0;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -136,7 +139,8 @@ public class Navigation extends AppCompatActivity implements OnMapReadyCallback,
 
     @Override
     public void onRoutingFailure(RouteException e) {
-
+        ///route();
+        Log.e("Error",e.getMessage());
     }
 
     @Override
@@ -149,6 +153,7 @@ public class Navigation extends AppCompatActivity implements OnMapReadyCallback,
         polylines.clear();
         routeHashMap.clear();
         selected_path = routes.get(shortestRouteIndex);
+
         for (int i = 0; i <routes.size(); i++) {
             if(i==shortestRouteIndex)
                 continue;
@@ -158,6 +163,7 @@ public class Navigation extends AppCompatActivity implements OnMapReadyCallback,
         drawRoute(routes.get(shortestRouteIndex),0);
         MapController.setCameraBounds(myPosition,destination,mMap);
         btn_gps.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(),R.drawable.icon_navigation));
+
     }
 
     @Override
@@ -271,6 +277,7 @@ public class Navigation extends AppCompatActivity implements OnMapReadyCallback,
         autocompleteFragment.setHint("Destination");
         autocompleteFragment.setFilter(autocompleteFilter);
         polylines = new ArrayList<>();
+
     }
 
     private void showPathInfoDialog()
@@ -278,13 +285,13 @@ public class Navigation extends AppCompatActivity implements OnMapReadyCallback,
         AlertDialog.Builder builder = new AlertDialog.Builder(Navigation.this,R.style.Theme_AppCompat_Dialog_Alert);
         View view_dialog = getLayoutInflater().inflate(R.layout.choose_best_route_fragment,null);
 
-        TextView txt_totalDistance = view_dialog.findViewById(R.id.txt_total_distance);
-        TextView txt_totalDuration = view_dialog.findViewById(R.id.txt_total_time);
-        TextView txt_realtime_Incident = view_dialog.findViewById(R.id.txt_realtime_incidents);
-        TextView txt_blackspots = view_dialog.findViewById(R.id.txt_blackspots);
-        TextView txtcriticalLocation = view_dialog.findViewById(R.id.txt_criticalLocations);
-        TextView txt_speedPoint = view_dialog.findViewById(R.id.txt_speedPoints);
-        TextView txt_traffic = view_dialog.findViewById(R.id.txt_trafficSigns);
+        final TextView txt_totalDistance = view_dialog.findViewById(R.id.txt_total_distance);
+        final TextView txt_totalDuration = view_dialog.findViewById(R.id.txt_total_time);
+        final TextView txt_realtime_Incident = view_dialog.findViewById(R.id.txt_realtime_incidents);
+        final TextView txt_blackspots = view_dialog.findViewById(R.id.txt_blackspots);
+        final TextView txtcriticalLocation = view_dialog.findViewById(R.id.txt_criticalLocations);
+        final TextView txt_speedPoint = view_dialog.findViewById(R.id.txt_speedPoints);
+        final TextView txt_traffic = view_dialog.findViewById(R.id.txt_trafficSigns);
         TextView btn_navigate = view_dialog.findViewById(R.id.btn_route_navigate);
 
         txt_totalDistance.setText(selected_path.getDistanceText());
@@ -294,6 +301,7 @@ public class Navigation extends AppCompatActivity implements OnMapReadyCallback,
         txtcriticalLocation.setText(""+critical);
         txt_speedPoint.setText(""+speedpoints);
         txt_traffic.setText(""+traffic);
+
 
         final Intent intent = new Intent(getApplicationContext(),MapsNavigate.class);
         RouteInfo routeInfo = new RouteInfo(myPosition,destination,selected_path.getPoints(),destination_name,
@@ -320,6 +328,7 @@ public class Navigation extends AppCompatActivity implements OnMapReadyCallback,
     }
 
     private void route(){
+        Log.d("Route","Started");
         mMap.clear();
         mMap.addMarker(new MarkerOptions().position(myPosition).title("My Location").icon(BitmapDescriptorFactory.fromResource(R.drawable.home_pin)));
         mMap.addMarker(new MarkerOptions().position(destination).title(destination_name).icon(BitmapDescriptorFactory.fromResource(R.drawable.home_pin)));

@@ -12,6 +12,7 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -33,7 +34,17 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.List;
+
+import REST_Controller.RESTClient;
+import REST_Controller.RESTInterface;
+import REST_Controller.Request;
+import REST_Controller.Traffic;
 import plugins.gligerglg.locusservice.LocusService;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 
 public class NearbyMap extends FragmentActivity implements OnMapReadyCallback {
 
@@ -54,6 +65,7 @@ public class NearbyMap extends FragmentActivity implements OnMapReadyCallback {
 
 
     private boolean isDataGet = true;
+    private RESTInterface restInterface;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,6 +96,8 @@ public class NearbyMap extends FragmentActivity implements OnMapReadyCallback {
         myRef = database.getReferenceFromUrl("https://isafe-5e90f.firebaseio.com/");
         locusService = new LocusService(getApplicationContext(),false);
         locationProviderClient = LocationServices.getFusedLocationProviderClient(getApplicationContext());
+
+        restInterface = RESTClient.getInstance().create(RESTInterface.class);
     }
 
     public void getRealtimeIncidents(View view){
@@ -115,6 +129,24 @@ public class NearbyMap extends FragmentActivity implements OnMapReadyCallback {
             request.setRadius(10000);
             getTrafficData(request);
         }*/
+
+        Request request = new Request(42.2582,89.252578,30);
+        Call<List<Traffic>> call = restInterface.getTrafficData(request);
+        call.enqueue(new Callback<List<Traffic>>() {
+            @Override
+            public void onResponse(Call<List<Traffic>> call, Response<List<Traffic>> response) {
+                setPopupMessage("" + response.code());
+                /*if(response.isSuccessful())
+                    setPopupMessage("OK");
+                else
+                    setPopupMessage("Failed");*/
+            }
+
+            @Override
+            public void onFailure(Call<List<Traffic>> call, Throwable t) {
+                Toast.makeText(getApplicationContext(),t.getMessage(),Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     public void getSpeedLocations(View view){
