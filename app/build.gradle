@@ -4,7 +4,7 @@ android {
     compileSdkVersion 28
     defaultConfig {
         applicationId "apps.gliger.isafe"
-        minSdkVersion 18
+        minSdkVersion 19
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
@@ -51,8 +51,10 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.5'
     implementation 'com.squareup.retrofit2:retrofit:2.3.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.3.0'
+    implementation 'com.android.volley:volley:1.0.0'
 
     implementation 'com.android.support:multidex:1.0.3'
+    implementation 'com.squareup.okhttp3:logging-interceptor:3.8.0'
 }
 
 apply plugin: 'com.google.gms.google-services'

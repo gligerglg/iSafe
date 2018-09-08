@@ -3,8 +3,11 @@ package apps.gliger.isafe;
 import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.WindowManager;
 import android.widget.CompoundButton;
+import android.widget.SeekBar;
 import android.widget.Switch;
+import android.widget.TextView;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -12,6 +15,8 @@ public class SettingsActivity extends AppCompatActivity {
     private Switch switch_voiceAss, switch_notification;
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor editor;
+    private SeekBar seekBar;
+    private TextView txt_radius;
 
     private boolean isBlackspotOn = true, isCriticalOn = true, isTrafficOn = true, isSpeedOn = true;
     private boolean isVoiceOn = true, isNotificationOn = true;
@@ -19,10 +24,31 @@ public class SettingsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_settings);
 
         Init();
         updateUI();
+
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                txt_radius.setText("Nearby Incident Radius (" + seekBar.getProgress() + " m)");
+                editor.putInt("radius",seekBar.getProgress());
+                editor.commit();
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
 
         switch_blackspot.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -99,6 +125,8 @@ public class SettingsActivity extends AppCompatActivity {
         switch_speedLimit = findViewById(R.id.switch_speedlimit);
         switch_voiceAss = findViewById(R.id.switch_voiceAssistant);
         switch_notification = findViewById(R.id.switch_notification);
+        txt_radius = findViewById(R.id.textView11);
+        seekBar = findViewById(R.id.seek_radius);
 
         sharedPreferences = getSharedPreferences("iSafe_settings",0);
         editor = sharedPreferences.edit();
@@ -142,5 +170,8 @@ public class SettingsActivity extends AppCompatActivity {
             switch_notification.setChecked(true);
         else
             switch_notification.setChecked(false);
+
+        seekBar.setProgress(sharedPreferences.getInt("radius",0));
+        txt_radius.setText("Nearby Incident Radius (" + seekBar.getProgress() + " m)");
     }
 }

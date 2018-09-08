@@ -11,6 +11,8 @@
         android:layout_gravity="top|start"
         android:id="@+id/card_placeHolder"
         android:layout_margin="10dp"
+        android:elevation="10dp"
+        app:cardUseCompatPadding="true"
         >
 
         <android.support.constraint.ConstraintLayout

@@ -3,7 +3,7 @@ package REST_Controller;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class Traffic {
+public class TrafficSign {
     @SerializedName("id")
     @Expose
     private Integer id;
@@ -22,6 +22,12 @@ public class Traffic {
     @SerializedName("reporterId")
     @Expose
     private String reporterId;
+
+    public TrafficSign(Double latitude, Double longitude, String sign) {
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.sign = sign;
+    }
 
     public Integer getId() {
         return id;

@@ -2,6 +2,7 @@ package apps.gliger.isafe;
 
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -23,13 +24,15 @@ public class HistorySpeedMap extends FragmentActivity implements OnMapReadyCallb
     private GoogleMap mMap;
     private List<SpeedMarker> speedMarkersList;
     private List<LatLng> wayPointList = new ArrayList<>();
-    private static final int lowerSpeed = 12;
-    private static final int midSpeed = 17;
+    private static final int lowerSpeed = 40;
+    private static final int midSpeed = 60;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_history_speed_map);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);

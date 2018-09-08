@@ -56,7 +56,17 @@ public class MapController {
             case "Flood": return R.drawable.flood_pin;
             case "Hazard": return R.drawable.hazard_pin;
             case "Landslip": return R.drawable.landslip_pin;
-            case "Traffic-Jam": return R.drawable.traffic_pin;
+            case "TrafficSign-Jam": return R.drawable.traffic_pin;
+        }
+        return 0;
+    }
+
+    public static int mapStaticIcon(String type){
+        switch (type){
+            case "Black-Spot": return R.drawable.icon_blackspots;
+            case "Traffic": return R.drawable.icon_traffic;
+            case "Speed": return R.drawable.icon_speed;
+            case "Critical": return R.drawable.icon_critical;
         }
         return 0;
     }
