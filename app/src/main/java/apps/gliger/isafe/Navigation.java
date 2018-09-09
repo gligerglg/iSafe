@@ -167,6 +167,15 @@ public class Navigation extends AppCompatActivity implements OnMapReadyCallback,
     }
 
     @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (dialog != null) {
+            dialog.dismiss();
+            dialog = null;
+        }
+    }
+
+    @Override
     public void onRoutingFailure(RouteException e) {
         ///route();
         Log.e("Error", e.getMessage());

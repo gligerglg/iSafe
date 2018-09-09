@@ -29,25 +29,6 @@ public class MainMenu extends AppCompatActivity {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main_menu);
 
-        //Set Permission
-        try {
-            PermissionsManager.init(this);
-            PermissionsManager.get()
-                    .requestLocationPermission()
-                    .subscribe(new Action1<PermissionsResult>() {
-                        @Override
-                        public void call(PermissionsResult permissionsResult) {
-                            if (permissionsResult.isGranted()) { // always true pre-M
-                                // do whatever
-                            }
-                            if (permissionsResult.hasAskedForPermissions()) { // false if pre-M
-                                // do whatever
-                            }
-                        }
-                    });
-        }catch (Exception e){}
-
-
         initializeConponents();
         initializeMethods();
     }

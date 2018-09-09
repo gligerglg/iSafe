@@ -55,6 +55,7 @@ dependencies {
 
     implementation 'com.android.support:multidex:1.0.3'
     implementation 'com.squareup.okhttp3:logging-interceptor:3.8.0'
+    implementation 'com.github.apl-devs:appintro:v4.2.3'
 }
 
 apply plugin: 'com.google.gms.google-services'

@@ -1131,6 +1131,8 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
     private void visualizeIncidentData()    /**Visualize All Incidents in the Map**/
     {
         if(isMapReady){
+            //Log.d("E","Start " + staticVisualizeIncidentList.size());
+            //Log.d("E","Start Loop");
             //Static Data
             for(StaticVisualizeIncident staticIncidentData : staticVisualizeIncidentList){
                 mMap.addMarker(new MarkerOptions()
@@ -1142,7 +1144,8 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
                         .strokeColor(Color.TRANSPARENT).center(new LatLng(staticIncidentData.getLatitude(), staticIncidentData.getLongitude())));
 
             }
-
+            //Log.d("E","End Static Data Loop");
+            //Log.d("E","Start Realtime Data Loop");
             //Real-time Data
             for(RealtimeIncident incident : realtimeIncidentHashMap.values()){
                 mMap.addCircle(new CircleOptions().strokeWidth(2).radius(realtimeRadius).fillColor(0x22ff0000)
@@ -1153,7 +1156,7 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
                         .title(incident.getIncident_name())
                         .icon(BitmapDescriptorFactory.fromResource(MapController.mapMarkerIcon(incident.getIncident_name()))));
             }
-
+            //Log.d("E","End Realtime Data Loop");
             //Remove all Thread Callbacks
             bearingHandler.removeCallbacks(bearingThread);
             realtimeIncidentHandler.removeCallbacks(realtimeIncidentThread);
@@ -1161,6 +1164,7 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
             criticalLocationHandler.removeCallbacks(criticalLocationThread);
             trafficSignHandler.removeCallbacks(trafficSignThread);
             blackspotHandler.removeCallbacks(blackspotThread);
+            Log.d("E","End Function");
         }
     }
 
