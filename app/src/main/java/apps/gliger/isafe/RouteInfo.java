@@ -11,7 +11,7 @@ import java.util.List;
  * Created by Gayan Lakshitha on 4/16/2018.
  */
 
-public class RouteInfo{
+public class RouteInfo {
     private LatLng start_point;
     private LatLng destination;
     private List<LatLng> points;
@@ -31,7 +31,7 @@ public class RouteInfo{
         this.endLocation = endLocation;
     }
 
-    public RouteInfo(LatLng start_point, LatLng destination, List<LatLng> points,String endLocation, int distance, int duration) {
+    public RouteInfo(LatLng start_point, LatLng destination, List<LatLng> points, String endLocation, int distance, int duration) {
         this.start_point = start_point;
         this.destination = destination;
         this.points = points;

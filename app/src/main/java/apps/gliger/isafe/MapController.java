@@ -1,6 +1,7 @@
 package apps.gliger.isafe;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.location.Location;
 
 import com.google.android.gms.maps.CameraUpdate;
@@ -18,10 +19,16 @@ import java.util.List;
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
 
+/**
+ * Static Methods to user in other activities
+ **/
 public class MapController {
     private static final int gpsGap = 5;
 
-    public static void drawPolyline(Context context, List<LatLng> pointList, int color, GoogleMap mMap){
+    /**
+     * Draw Polyline
+     */
+    public static void drawPolyline(Context context, List<LatLng> pointList, int color, GoogleMap mMap) {
         PolylineOptions polylineOptions = new PolylineOptions();
         polylineOptions.color(context.getResources().getColor(color));
         polylineOptions.addAll(pointList);
@@ -31,6 +38,9 @@ public class MapController {
         mMap.addPolyline(polylineOptions);
     }
 
+    /**
+     * Camera bound set according to 2 LatLng points
+     */
     public static void setCameraBounds(LatLng myPosition, LatLng destination, GoogleMap mMap) {
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         builder.include(myPosition);
@@ -40,109 +50,125 @@ public class MapController {
         mMap.animateCamera(cameraUpdate);
     }
 
+    /**
+     * Calculate distance between 2 LatLng points
+     */
     public static double getDistance(LatLng point1, LatLng point2) {
         double p = 0.017453292519943295;
-        double a = 0.5 - cos((point2.latitude - point1.latitude) * p)/2 +
+        double a = 0.5 - cos((point2.latitude - point1.latitude) * p) / 2 +
                 cos(point1.latitude * p) * cos(point2.latitude * p) *
-                        (1 - cos((point2.longitude - point1.longitude) * p))/2;
+                        (1 - cos((point2.longitude - point1.longitude) * p)) / 2;
 
-        return 12.742 * Math.asin(Math.sqrt(a))*1000*1000;
+        return 12.742 * Math.asin(Math.sqrt(a)) * 1000 * 1000;
     }
 
-    public static int mapMarkerIcon(String type){
-        switch (type){
-            case "Accident": return R.drawable.accident_pin;
-            case "Closure": return R.drawable.closure_pin;
-            case "Flood": return R.drawable.flood_pin;
-            case "Hazard": return R.drawable.hazard_pin;
-            case "Landslip": return R.drawable.landslip_pin;
-            case "TrafficSign-Jam": return R.drawable.traffic_pin;
+    /**
+     * Map marker icon according to String and return int
+     */
+    public static int mapMarkerIcon(String type) {
+        switch (type) {
+            case "Accident":
+                return R.drawable.accident_pin;
+            case "Closure":
+                return R.drawable.closure_pin;
+            case "Flood":
+                return R.drawable.flood_pin;
+            case "Hazard":
+                return R.drawable.hazard_pin;
+            case "Landslip":
+                return R.drawable.landslip_pin;
+            case "TrafficSign-Jam":
+                return R.drawable.traffic_pin;
         }
         return 0;
     }
 
-    public static int mapStaticIcon(String type){
-        switch (type){
-            case "Black-Spot": return R.drawable.icon_blackspots;
-            case "Traffic": return R.drawable.icon_traffic;
-            case "Speed": return R.drawable.icon_speed;
-            case "Critical": return R.drawable.icon_critical;
+    public static int mapStaticIcon(String type) {
+        switch (type) {
+            case "Black-Spot":
+                return R.drawable.icon_blackspots;
+            case "Traffic":
+                return R.drawable.icon_traffic;
+            case "Speed":
+                return R.drawable.icon_speed;
+            case "Critical":
+                return R.drawable.icon_critical;
         }
         return 0;
     }
 
-    public static String generateDistanceString(double Distance){
+    public static String generateDistanceString(double Distance) {
         String distance = "";
-        if(Distance>=1000) {
-            distance += String.format("%.0f",(Distance / 1000)) + " km ";
-            Distance%=1000;
+        if (Distance >= 1000) {
+            distance += String.format("%.0f", (Distance / 1000)) + " km ";
+            Distance %= 1000;
         }
-        if(Distance<1000)
-            distance += String.format("%.0f",Distance) + " m ";
+        if (Distance < 1000)
+            distance += String.format("%.0f", Distance) + " m ";
         return distance;
     }
 
-    public static String generateSimpleDistanceString(double Distance){
+    public static String generateSimpleDistanceString(double Distance) {
         String distance = "";
-        if(Distance>=1000) {
-            distance += String.format("%.0f",(Distance / 1000)) + " km ";
-            Distance%=1000;
-        }
-        else if(Distance<1000)
-            distance += String.format("%.0f",Distance) + " m ";
+        if (Distance >= 1000) {
+            distance += String.format("%.0f", (Distance / 1000)) + " km ";
+            Distance %= 1000;
+        } else if (Distance < 1000)
+            distance += String.format("%.0f", Distance) + " m ";
         return distance;
     }
 
-    public static String generateTimeString(double Time){
+    public static String generateTimeString(double Time) {
         String time = "";
-        if(Time>=3600){
-            time += String.format("%.0f",(Time/3600)) + " H ";
-            Time%=3600;
+        if (Time >= 3600) {
+            time += String.format("%.0f", (Time / 3600)) + " H ";
+            Time %= 3600;
         }
 
-        if(Time>=60){
-            time += String.format("%.0f",(Time/60)) + " m ";
-            Time%=60;
+        if (Time >= 60) {
+            time += String.format("%.0f", (Time / 60)) + " m ";
+            Time %= 60;
         }
 
-        if(Time<60)
-            time += String.format("%.0f",Time) + " s ";
+        if (Time < 60)
+            time += String.format("%.0f", Time) + " s ";
 
         return time;
     }
 
-    public static String generateSimpleTimeString(double Time){
+    public static String generateSimpleTimeString(double Time) {
         String time = "";
-        if(Time>=3600){
-            time += String.format("%.0f",(Time/3600)) + " H ";
-            Time%=3600;
-        }
-        else if(Time>=60){
-            time += String.format("%.0f",(Time/60)) + " m ";
-            Time%=60;
-        }
-        else if(Time<60)
-            time += String.format("%.0f",Time) + " s ";
+        if (Time >= 3600) {
+            time += String.format("%.0f", (Time / 3600)) + " H ";
+            Time %= 3600;
+        } else if (Time >= 60) {
+            time += String.format("%.0f", (Time / 60)) + " m ";
+            Time %= 60;
+        } else if (Time < 60)
+            time += String.format("%.0f", Time) + " s ";
 
         return time;
     }
 
-    public static String generateSpeedString(double Speed){
+    public static String generateSpeedString(double Speed) {
         String speed = "";
         //Speed *=(18/5.0);
-        speed += String.format("%.2f",Speed) + " kmph";
+        speed += String.format("%.2f", Speed) + " kmph";
         return speed;
     }
 
-    public static List<LatLng> generateContinuousPath(List<LatLng> pointList){
+    /**
+     * Get LatLng point list and -> process -> return same distance point list
+     */
+    public static List<LatLng> generateContinuousPath(List<LatLng> pointList) {
         List<LatLng> continuousList = new ArrayList<>();
         LinkedList<LatLng> pointQueue = new LinkedList<>(pointList);
         continuousList.add(pointQueue.poll());
 
-        while (!pointQueue.isEmpty()){
-            if(getDistance(continuousList.get(continuousList.size()-1),pointQueue.peek())>gpsGap)
-                continuousList.add(generateNewLatLng(continuousList.get(continuousList.size()-1),pointQueue.peek()));
-            else if(getDistance(continuousList.get(continuousList.size()-1),pointQueue.peek())<gpsGap)
+        while (!pointQueue.isEmpty()) {
+            if (getDistance(continuousList.get(continuousList.size() - 1), pointQueue.peek()) > gpsGap)
+                continuousList.add(generateNewLatLng(continuousList.get(continuousList.size() - 1), pointQueue.peek()));
+            else if (getDistance(continuousList.get(continuousList.size() - 1), pointQueue.peek()) < gpsGap)
                 pointQueue.poll();
             else
                 continuousList.add(pointQueue.poll());
@@ -153,14 +179,14 @@ public class MapController {
 
     private static LatLng generateNewLatLng(LatLng start, LatLng end) {
         LatLng newPoint;
-        double distance = getDistance(start,end);
-        double lat = ((gpsGap*end.latitude) + ((distance-gpsGap)*start.latitude))/distance;
-        double lon = ((gpsGap*end.longitude) + ((distance-gpsGap)*start.longitude))/distance;
-        newPoint = new LatLng(lat,lon);
+        double distance = getDistance(start, end);
+        double lat = ((gpsGap * end.latitude) + ((distance - gpsGap) * start.latitude)) / distance;
+        double lon = ((gpsGap * end.longitude) + ((distance - gpsGap) * start.longitude)) / distance;
+        newPoint = new LatLng(lat, lon);
         return newPoint;
     }
 
-    public static float CalculateBearingAngle(Location startPoint, Location endPoint){
+    public static float CalculateBearingAngle(Location startPoint, Location endPoint) {
 
         double startLatitude = startPoint.getLatitude();
         double startLongitude = startPoint.getLongitude();
@@ -171,7 +197,19 @@ public class MapController {
         double Phi2 = Math.toRadians(endLatitude);
         double DeltaLambda = Math.toRadians(endLongitude - startLongitude);
 
-        double Theta = Math.atan2((sin(DeltaLambda)*cos(Phi2)) , (cos(Phi1)*sin(Phi2) - sin(Phi1)*cos(Phi2)*cos(DeltaLambda)));
-        return (float)Math.toDegrees(Theta);
+        double Theta = Math.atan2((sin(DeltaLambda) * cos(Phi2)), (cos(Phi1) * sin(Phi2) - sin(Phi1) * cos(Phi2) * cos(DeltaLambda)));
+        return (float) Math.toDegrees(Theta);
+    }
+
+    public static void saveToken(Context context, String token) {
+        SharedPreferences sharedPref = context.getSharedPreferences("iSafe_settings", 0);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString("token", token);
+        editor.commit();
+    }
+
+    public static String getToken(Context context) {
+        SharedPreferences sharedPref = context.getSharedPreferences("iSafe_settings", 0);
+        return sharedPref.getString("token", "");
     }
 }

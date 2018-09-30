@@ -12,18 +12,18 @@ public class Stopwatch {
         handler = new Handler();
     }
 
-    public void start(){
-        handler.postDelayed(thread,1000);
+    public void start() {
+        handler.postDelayed(thread, 1000);
     }
 
-    public long stop(){
+    public long stop() {
         long time = total_time;
         total_time = 0;
         handler.removeCallbacks(thread);
         return time;
     }
 
-    public void pause(){
+    public void pause() {
         handler.removeCallbacks(thread);
     }
 
@@ -35,7 +35,7 @@ public class Stopwatch {
         @Override
         public void run() {
             total_time += 1;
-            handler.postDelayed(thread,1000);
+            handler.postDelayed(thread, 1000);
         }
     };
 }

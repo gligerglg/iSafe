@@ -6,6 +6,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Toast;
+
+import java.util.Date;
 
 public class SplashScreen extends AppCompatActivity {
 
@@ -19,8 +22,8 @@ public class SplashScreen extends AppCompatActivity {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_splash_screen);
 
-        SharedPreferences sharedPref= getSharedPreferences("iSafe_settings", 0);
-        final SharedPreferences.Editor editor= sharedPref.edit();
+        final SharedPreferences sharedPref = getSharedPreferences("iSafe_settings", 0);
+        final SharedPreferences.Editor editor = sharedPref.edit();
         isFirsttime = sharedPref.getBoolean("intro", true);
 
         Thread thread = new Thread(){
@@ -37,8 +40,13 @@ public class SplashScreen extends AppCompatActivity {
                         editor.putBoolean("intro",false);
                         editor.commit();
                     }
-                    else
-                        intent = new Intent(SplashScreen.this,MainMenu.class);
+                    else{
+                        if(sharedPref.getBoolean("staylogin",false))
+                            intent = new Intent(SplashScreen.this,MainMenu.class);
+                        else
+                            intent = new Intent(SplashScreen.this,LoginActivity.class);
+                    }
+
                     startActivity(intent);
                 }
             }

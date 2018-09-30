@@ -2,9 +2,10 @@ package apps.gliger.isafe;
 
 
 import com.google.android.gms.maps.model.LatLng;
+
 import java.util.List;
 
-public class SummeryInfo{
+public class SummeryInfo {
     private LatLng start_location;
     private LatLng end_location;
     private String route;

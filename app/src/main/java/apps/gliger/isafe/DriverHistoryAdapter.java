@@ -26,9 +26,9 @@ public class DriverHistoryAdapter extends RecyclerView.Adapter<DriverHistoryAdap
     @Override
     public HistoryHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         context = parent.getContext();
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.driver_history_fragment,parent,false);
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.driver_history_fragment, parent, false);
         HistoryHolder historyHolder = new HistoryHolder(v);
-        return  historyHolder;
+        return historyHolder;
     }
 
     @Override
@@ -46,8 +46,8 @@ public class DriverHistoryAdapter extends RecyclerView.Adapter<DriverHistoryAdap
         holder.btn_speedMap.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(context,HistorySpeedMap.class);
-                intent.putExtra("speedMarkerList",trips.get(position).getSpeedMarkerList());
+                Intent intent = new Intent(context, HistorySpeedMap.class);
+                intent.putExtra("speedMarkerList", trips.get(position).getSpeedMarkerList());
                 context.startActivity(intent);
             }
         });

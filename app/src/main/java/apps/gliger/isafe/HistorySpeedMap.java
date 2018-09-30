@@ -41,13 +41,17 @@ public class HistorySpeedMap extends FragmentActivity implements OnMapReadyCallb
         Init();
     }
 
+    /**
+     * Initialize all attributes
+     */
     private void Init() {
-        TypeToken<List<SpeedMarker>> token = new TypeToken<List<SpeedMarker>>(){};
+        TypeToken<List<SpeedMarker>> token = new TypeToken<List<SpeedMarker>>() {
+        };
         String speedPointString = getIntent().getStringExtra("speedMarkerList");
-        speedMarkersList = new Gson().fromJson(speedPointString,token.getType());
+        speedMarkersList = new Gson().fromJson(speedPointString, token.getType());
 
-        for(SpeedMarker point : speedMarkersList)
-            wayPointList.add(new LatLng(point.getLatitude(),point.getLongitude()));
+        for (SpeedMarker point : speedMarkersList)
+            wayPointList.add(new LatLng(point.getLatitude(), point.getLongitude()));
     }
 
     @Override
@@ -57,24 +61,27 @@ public class HistorySpeedMap extends FragmentActivity implements OnMapReadyCallb
         drawSpeedPoints();
     }
 
-    private void drawSpeedPoints(){
-        MapController.drawPolyline(getApplicationContext(),wayPointList,R.color.colorPrimaryDark,mMap);
-        MapController.setCameraBounds(wayPointList.get(0),wayPointList.get(wayPointList.size()-1),mMap);
+    /**
+     * Plot speed points imported from DB to map fragment
+     */
+    private void drawSpeedPoints() {
+        MapController.drawPolyline(getApplicationContext(), wayPointList, R.color.colorPrimaryDark, mMap);
+        MapController.setCameraBounds(wayPointList.get(0), wayPointList.get(wayPointList.size() - 1), mMap);
 
-        for(SpeedMarker marker : speedMarkersList){
-            if(marker.getSpeed()<lowerSpeed)
+        for (SpeedMarker marker : speedMarkersList) {
+            if (marker.getSpeed() < lowerSpeed)
                 mMap.addMarker(new MarkerOptions()
                         .position(new LatLng(marker.getLatitude(), marker.getLongitude()))
                         .title("Lower Speed")
                         .snippet(MapController.generateSpeedString(marker.getSpeed()))
                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.low_speed_marker)));
-            else if(marker.getSpeed()<midSpeed)
+            else if (marker.getSpeed() < midSpeed)
                 mMap.addMarker(new MarkerOptions()
                         .position(new LatLng(marker.getLatitude(), marker.getLongitude()))
                         .title("Mid Speed")
                         .snippet(MapController.generateSpeedString(marker.getSpeed()))
                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.mid_speed_marker)));
-            else if(marker.getSpeed()>=midSpeed)
+            else if (marker.getSpeed() >= midSpeed)
                 mMap.addMarker(new MarkerOptions()
                         .position(new LatLng(marker.getLatitude(), marker.getLongitude()))
                         .title("Higher Speed")

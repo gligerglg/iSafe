@@ -1,86 +1,15 @@
 <resources>
     <string name="app_name">iSafe</string>
-    <string name="title_activity_main">Map</string>
 
     <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="title_activity_maps_navigate">Map</string>
-    <string name="title_activity_settings">Settings</string>
 
+    <string name="token">eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ2RVlPSlluTm1zOEFpdk1lbUZISXBfX0QwRzJxTW9SV1lXbnlUWWFTd1RVIn0.eyJqdGkiOiJiZWViZWY3Yi00ZTcyLTQ4YjctYTc3Ny1lZWYyMzI0MGY5Y2QiLCJleHAiOjE1MzY1ODI4ODIsIm5iZiI6MCwiaWF0IjoxNTM2NTgyNTgyLCJpc3MiOiJodHRwczovL2F1dGgubm8xLmxrOjg0NDMvYXV0aC9yZWFsbXMvaVNhZmUiLCJhdWQiOiJpU2FmZSIsInN1YiI6ImZkNDU3OTZmLWI5YzQtNGVmMC04MGYyLTg5NjEzNGFhNzQ0YSIsInR5cCI6IkJlYXJlciIsImF6cCI6ImlTYWZlIiwiYXV0aF90aW1lIjowLCJzZXNzaW9uX3N0YXRlIjoiOTViY2YxMDctOGYzMy00NTc4LTk3N2ItMjQ5OGE0ZmEwMDZlIiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6W10sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJvZmZsaW5lX2FjY2VzcyIsInVtYV9hdXRob3JpemF0aW9uIiwidXNlciJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoiZW1haWwgcHJvZmlsZSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJuYW1lIjoiWWFzYXMgUmFuZ2lrYSIsInByZWZlcnJlZF91c2VybmFtZSI6InJhbmdpa2F5bWVuZGlzM2dtYWlsLmNvbSIsImdpdmVuX25hbWUiOiJZYXNhcyIsImZhbWlseV9uYW1lIjoiUmFuZ2lrYSIsImVtYWlsIjoicmFuZ2lrYXltZW5kaXNAZ21haWwuY29tIn0.e7aiMGs_tgXoMVBeXl7X_I2-TLS34MAKadm7Awv-19r6e0K0q8VghYpmzE8o8vRS9L33HH1mEfO_HeXT7vAM51HcWOQtS0qyvZOXIxsaXixtXxdR52nH-u5dGhtIrOQHQYNPEoD22vH0Dj1xA2-5mEkZIqvQ2MfHfmUXr6Ocd3y7HsFADN4ozjZIZQYzmiUls857zuE38L3EIfts08QJhXbm6bE-zCPRxHXEvP0BPj6flMIIJzbBF2y_mF-XYNpOM4LSpsweqaRxVWF_U90iMRMRhB00fEnm4L8StZEqsanP9-KUMuhRHRBDRDLhroT26YemUgmZJWVYn8ESq3lMCQ</string>
     <!-- Strings related to Settings -->
 
     <!-- Example General settings -->
-    <string name="pref_header_general">General</string>
-
-    <string name="pref_title_social_recommendations">Enable social recommendations</string>
-    <string name="pref_description_social_recommendations">Recommendations for people to contact
-        based on your message history
-    </string>
-
-    <string name="pref_title_display_name">Display name</string>
-    <string name="pref_default_display_name">John Smith</string>
-
-    <string name="pref_title_add_friends_to_messages">Add friends to messages</string>
-    <string-array name="pref_example_list_titles">
-        <item>Always</item>
-        <item>When possible</item>
-        <item>Never</item>
-    </string-array>
-    <string-array name="pref_example_list_values">
-        <item>1</item>
-        <item>0</item>
-        <item>-1</item>
-    </string-array>
 
     <!-- Example settings for Data & Sync -->
-    <string name="pref_header_data_sync">Data &amp; sync</string>
-
-    <string name="pref_title_sync_frequency">Sync frequency</string>
-    <string-array name="pref_sync_frequency_titles">
-        <item>15 minutes</item>
-        <item>30 minutes</item>
-        <item>1 hour</item>
-        <item>3 hours</item>
-        <item>6 hours</item>
-        <item>Never</item>
-    </string-array>
-    <string-array name="pref_sync_frequency_values">
-        <item>15</item>
-        <item>30</item>
-        <item>60</item>
-        <item>180</item>
-        <item>360</item>
-        <item>-1</item>
-    </string-array>
-
-    <string-array name="list_preference_entries">
-        <item>Entry 1</item>
-        <item>Entry 2</item>
-        <item>Entry 3</item>
-    </string-array>
-
-    <string-array name="list_preference_entry_values">
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-    </string-array>
-
-    <string-array name="multi_select_list_preference_default_value" />
-
-    <string name="pref_title_system_sync_settings">System sync settings</string>
 
     <!-- Example settings for Notifications -->
-    <string name="pref_header_notifications">Notifications</string>
 
-    <string name="pref_title_new_message_notifications">New message notifications</string>
-
-    <string name="pref_title_ringtone">Ringtone</string>
-    <string name="pref_ringtone_silent">Silent</string>
-
-    <string name="pref_title_vibrate">Vibrate</string>
-    <string name="title_activity_driving_summery">Map</string>
-
-    <string name="title_activity_nearby_map">Map</string>
-    <string name="title_activity_history_speed_map">Map</string>
-    <string name="title_activity_ggggg">Map</string>
-</resources>
+    </resources>

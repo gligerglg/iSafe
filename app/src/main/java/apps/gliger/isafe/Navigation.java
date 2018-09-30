@@ -1,6 +1,7 @@
 package apps.gliger.isafe;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
@@ -87,6 +88,10 @@ public class Navigation extends AppCompatActivity implements OnMapReadyCallback,
     private StaticIncidentData statics_data;
     private FirebaseDatabase database;
     private DatabaseReference myRef;
+    private String token;
+
+    private boolean isBlackspotEnabled, isCriticalEnabled, isTrafficEnabled, isSpeedLimitEnabled;
+    private SharedPreferences sharedPref;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,7 +114,7 @@ public class Navigation extends AppCompatActivity implements OnMapReadyCallback,
                     myPosition = new LatLng(location.getLatitude(), location.getLongitude());
                     mMap.addMarker(new MarkerOptions().position(myPosition).title("My Location").icon(BitmapDescriptorFactory.fromResource(R.drawable.home_pin)));
                     mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(myPosition, 14.0f));
-                    locusService.stopRealTimeNetListening();
+                    locusService.stopRealTimeGPSListening();
                     if (destination != null) {
                         setProgressDialog("Fetching Route Data");
                         route();
@@ -126,7 +131,7 @@ public class Navigation extends AppCompatActivity implements OnMapReadyCallback,
                         if (ActivityCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                             return;
                         }
-                        locusService.startRealtimeNetListening(1000);
+                        locusService.startRealtimeGPSListening(1000);
                         setProgressDialog("Calculating GPS Location");
                     } else
                         locusService.openSettingsWindow("iSafe needs to enable GPS service to acquire precise location data\n" +
@@ -204,7 +209,8 @@ public class Navigation extends AppCompatActivity implements OnMapReadyCallback,
         btn_gps.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.icon_navigation));
         try {
             dialog.dismiss();
-        }catch (Exception e){}
+        } catch (Exception e) {
+        }
 
     }
 
@@ -249,6 +255,9 @@ public class Navigation extends AppCompatActivity implements OnMapReadyCallback,
                 .show();
     }
 
+    /**
+     * Draw shortest & alternative routes
+     */
     private void drawRoute(Route route, int colorIndex) {
         PolylineOptions polyOptions = new PolylineOptions();
         polyOptions.color(getResources().getColor(COLORS[colorIndex]));
@@ -267,9 +276,11 @@ public class Navigation extends AppCompatActivity implements OnMapReadyCallback,
 
     private void Init() {
 
+        sharedPref = getSharedPreferences("iSafe_settings", 0);
         isReroute = getIntent().getBooleanExtra("isReroute", false);
         database = FirebaseDatabase.getInstance();
         myRef = database.getReference().child("RT-Incidents");
+        token = MapController.getToken(getApplicationContext());
 
         if (isReroute) {
             myLocLat = getIntent().getDoubleExtra("myLocLat", 0);
@@ -295,6 +306,7 @@ public class Navigation extends AppCompatActivity implements OnMapReadyCallback,
         polylines = new ArrayList<>();
 
         restInterface = RESTClient.getInstance().create(RESTInterface.class);
+        initSettingsData();
 
     }
 
@@ -324,6 +336,16 @@ public class Navigation extends AppCompatActivity implements OnMapReadyCallback,
         RouteInfo routeInfo = new RouteInfo(myPosition, destination, selected_path.getPoints(), destination_name,
                 selected_path.getDistanceValue(), selected_path.getDurationValue());
 
+        //Static Filter
+        if (!isBlackspotEnabled)
+            statics_data.getBlackSpots().clear();
+        if (!isTrafficEnabled)
+            statics_data.getRoadSigns().clear();
+        if (!isSpeedLimitEnabled)
+            statics_data.getSpeedLimits().clear();
+        if (!isCriticalEnabled)
+            statics_data.getCriticalPoints().clear();
+
         //Static Data Class
         String static_data = new Gson().toJson(statics_data);
         String route_data = new Gson().toJson(routeInfo);
@@ -338,10 +360,11 @@ public class Navigation extends AppCompatActivity implements OnMapReadyCallback,
             }
         });
 
-        try{
+        try {
             builder.setView(view_dialog);
             builder.create().show();
-        }catch (Exception ex){}
+        } catch (Exception ex) {
+        }
 
     }
 
@@ -362,8 +385,8 @@ public class Navigation extends AppCompatActivity implements OnMapReadyCallback,
 
     private void showStaticIncidentData() {
         ArrayList<RouteRequest> requestList = new ArrayList<>();
-        for(LatLng point : selected_path.getPoints())
-            requestList.add(new RouteRequest(point.latitude,point.longitude));
+        for (LatLng point : selected_path.getPoints())
+            requestList.add(new RouteRequest(point.latitude, point.longitude));
 
         Call<StaticIncidentData> call = restInterface.getStaticDataSet(requestList);
         call.enqueue(new Callback<StaticIncidentData>() {
@@ -389,19 +412,19 @@ public class Navigation extends AppCompatActivity implements OnMapReadyCallback,
 
     }
 
-    private void showRealtimeData(final Route route){
+    private void showRealtimeData(final Route route) {
         realtime_incidents = 0;
         myRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 myRef.removeEventListener(this);
-                if(dataSnapshot.getChildren().iterator().hasNext()) {
+                if (dataSnapshot.getChildren().iterator().hasNext()) {
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                         RealtimeIncident incident = snapshot.getValue(RealtimeIncident.class);
                         LatLng incidentLatLng = new LatLng(incident.getLatitude(), incident.getLongitude());
 
-                        for(LatLng point : route.getPoints()){
-                            if (MapController.getDistance(point, incidentLatLng) <= 30) {
+                        for (LatLng point : route.getPoints()) {
+                            if (incidentLatLng.equals(point)) {
                                 realtime_incidents++;
                             }
                         }
@@ -415,6 +438,13 @@ public class Navigation extends AppCompatActivity implements OnMapReadyCallback,
 
             }
         });
+    }
+
+    private void initSettingsData() {
+        isBlackspotEnabled = sharedPref.getBoolean("blackspot", true);
+        isCriticalEnabled = sharedPref.getBoolean("critical", true);
+        isSpeedLimitEnabled = sharedPref.getBoolean("speed", true);
+        isTrafficEnabled = sharedPref.getBoolean("traffic", true);
     }
 
 }

@@ -22,12 +22,14 @@ public class DriverHistory extends AppCompatActivity {
     private TextView txt_totalDistance, txt_totalTime, txt_totalScore;
     private double distance=0, time = 0;
     private int score = 0;
+    private String token;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_driver_history);
 
+        /**Initialize all attributes**/
         Init();
     }
 
@@ -35,6 +37,7 @@ public class DriverHistory extends AppCompatActivity {
         txt_totalDistance = findViewById(R.id.txt_history_distance);
         txt_totalTime = findViewById(R.id.txt_history_duration);
         txt_totalScore = findViewById(R.id.txt_history_points);
+        token = MapController.getToken(getApplicationContext());
 
         tripDB = Room.databaseBuilder(getApplicationContext(),TripDB.class,"TripDB").fallbackToDestructiveMigration()
                 .allowMainThreadQueries()

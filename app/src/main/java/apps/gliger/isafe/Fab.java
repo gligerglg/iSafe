@@ -27,7 +27,7 @@ public class Fab extends FloatingActionButton implements AnimatedFab {
 
     @Override
     public void show() {
-        show(0,0);
+        show(0, 0);
     }
 
     @Override

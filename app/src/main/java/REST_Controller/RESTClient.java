@@ -1,5 +1,8 @@
 package REST_Controller;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
@@ -11,6 +14,10 @@ public class RESTClient {
 
     public static Retrofit getInstance(){
 
+        Gson gson = new GsonBuilder()
+                .setLenient()
+                .create();
+
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
         logging.setLevel(HttpLoggingInterceptor.Level.BODY);
         OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
@@ -19,7 +26,7 @@ public class RESTClient {
         if(retrofit==null){
             retrofit = new Retrofit.Builder()
                 .baseUrl(baseURL)
-                    .addConverterFactory(GsonConverterFactory.create())
+                    .addConverterFactory(GsonConverterFactory.create(gson))
                     .client(httpClient.build())
                     .build();
         }

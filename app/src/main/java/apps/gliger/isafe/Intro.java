@@ -16,8 +16,11 @@ import net.ralphpina.permissionsmanager.PermissionsResult;
 
 import rx.functions.Action1;
 
+/**
+ * Intro for the first user to show the capabilities of the application
+ */
 
-public class Intro extends AppIntro{
+public class Intro extends AppIntro {
 
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor editor;
@@ -30,9 +33,9 @@ public class Intro extends AppIntro{
         setZoomAnimation();
         showSeparator(false);
 
-        sharedPreferences = getSharedPreferences("iSafe_settings",0);
+        sharedPreferences = getSharedPreferences("iSafe_settings", 0);
         editor = sharedPreferences.edit();
-        editor.putInt("radius",1000);
+        editor.putInt("radius", 1000);
         editor.commit();
 
         addSlide(AppIntroFragment.newInstance("",
@@ -53,8 +56,7 @@ public class Intro extends AppIntro{
 
         addSlide(AppIntroFragment.newInstance("Earn Points!",
                 "25 points -> New Real-time incident\n"
-                + "50 points -> Uploading incident photograph\n"
-                + "5 points -> Removing expired incident",
+                        + "50 points -> Uploading incident photograph",
                 R.drawable.slide4,
                 Color.parseColor("#049704")));
 
@@ -74,7 +76,7 @@ public class Intro extends AppIntro{
 
     }
 
-    private void getPermission(){
+    private void getPermission() {
         try {
             PermissionsManager.init(this);
             PermissionsManager.get()
@@ -84,7 +86,7 @@ public class Intro extends AppIntro{
                         public void call(PermissionsResult permissionsResult) {
                             if (permissionsResult.isGranted()) { // always true pre-M
                                 // do whatever
-                                startActivity(new Intent(Intro.this,MainMenu.class));
+                                startActivity(new Intent(Intro.this, LoginActivity.class));
                                 finish();
                             }
                             if (permissionsResult.hasAskedForPermissions()) { // false if pre-M
@@ -92,7 +94,8 @@ public class Intro extends AppIntro{
                             }
                         }
                     });
-        }catch (Exception e){}
+        } catch (Exception e) {
+        }
     }
 
     @Override

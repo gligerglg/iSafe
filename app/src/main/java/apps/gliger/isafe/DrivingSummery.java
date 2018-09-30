@@ -37,15 +37,17 @@ public class DrivingSummery extends AppCompatActivity implements OnMapReadyCallb
     private SpeedMarker tempMarker;
 
     private TripDB tripDB;
-    private int addIncidentScore=0, removeIncidentScore=0, overSpeedScore=0, totalScore=0;
+    private int addIncidentScore = 0, removeIncidentScore = 0, overSpeedScore = 0, totalScore = 0;
 
     private TextView txt_totalDistance, txt_totalTime, txt_averageSpeed;
     private TextView txt_scoreAddIncident, txt_scoreRemoveIncident, txt_scoreOverSpeed, txt_scoreTotal;
     private AppCompatButton btnSave;
+    private String token;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        /**Hide status bar*/
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_driving_summery);
@@ -59,23 +61,27 @@ public class DrivingSummery extends AppCompatActivity implements OnMapReadyCallb
         btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(summeryInfo.isEndJourney())
+                if (summeryInfo.isEndJourney())
                     saveSummery();
                 finish();
             }
         });
     }
 
+    /**
+     * Initialize all attributes
+     **/
     private void Init() {
         String dataset = getIntent().getStringExtra("summeryInfo");
-        if(dataset!=null){
+        if (dataset != null) {
             Gson gson = new Gson();
-            summeryInfo = gson.fromJson(dataset,SummeryInfo.class);
+            summeryInfo = gson.fromJson(dataset, SummeryInfo.class);
             speedMap = summeryInfo.getSpeedMarkerList();
             totalTime = summeryInfo.getTotal_time();
         }
 
-        tripDB = Room.databaseBuilder(getApplicationContext(),TripDB.class,"TripDB").fallbackToDestructiveMigration()
+        token = MapController.getToken(getApplicationContext());
+        tripDB = Room.databaseBuilder(getApplicationContext(), TripDB.class, "TripDB").fallbackToDestructiveMigration()
                 .allowMainThreadQueries()
                 .build();
 
@@ -88,7 +94,7 @@ public class DrivingSummery extends AppCompatActivity implements OnMapReadyCallb
         txt_scoreTotal = findViewById(R.id.txt_summery_totalScore);
         btnSave = findViewById(R.id.btn_summery_save);
 
-        if(summeryInfo.isEndJourney())
+        if (summeryInfo.isEndJourney())
             btnSave.setText("SAVE AND END JOURNEY");
         else
             btnSave.setText("BACK TO NAVIGATION");
@@ -97,27 +103,30 @@ public class DrivingSummery extends AppCompatActivity implements OnMapReadyCallb
         removeIncidentScore = summeryInfo.getScore_removeIncidents();
         overSpeedScore = summeryInfo.getScore_overSpeed();
         totalScore = addIncidentScore + removeIncidentScore - overSpeedScore;
-        if(totalScore<0)
-            totalScore=0;
+        if (totalScore < 0)
+            totalScore = 0;
     }
 
-    private void updateUI(){
+    /**
+     * Update UI
+     */
+    private void updateUI() {
         List<LatLng> route = new ArrayList<>();
-        for(SpeedMarker marker : speedMap){
+        for (SpeedMarker marker : speedMap) {
 
-            if(marker.getSpeed()<lowerSpeed)
+            if (marker.getSpeed() < lowerSpeed)
                 mMap.addMarker(new MarkerOptions()
                         .position(new LatLng(marker.getLatitude(), marker.getLongitude()))
                         .title("Lower Speed")
                         .snippet(MapController.generateSpeedString(marker.getSpeed()))
                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.low_speed_marker)));
-            else if(marker.getSpeed()<midSpeed)
+            else if (marker.getSpeed() < midSpeed)
                 mMap.addMarker(new MarkerOptions()
                         .position(new LatLng(marker.getLatitude(), marker.getLongitude()))
                         .title("Mid Speed")
                         .snippet(MapController.generateSpeedString(marker.getSpeed()))
                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.mid_speed_marker)));
-            else if(marker.getSpeed()>=midSpeed)
+            else if (marker.getSpeed() >= midSpeed)
                 mMap.addMarker(new MarkerOptions()
                         .position(new LatLng(marker.getLatitude(), marker.getLongitude()))
                         .title("Higher Speed")
@@ -126,15 +135,15 @@ public class DrivingSummery extends AppCompatActivity implements OnMapReadyCallb
 
             route.add(new LatLng(marker.getLatitude(), marker.getLongitude()));
 
-            if(tempMarker!=null){
-                totalDistance += MapController.getDistance(new LatLng(tempMarker.getLatitude(),tempMarker.getLongitude())
-                        ,new LatLng(marker.getLatitude(),marker.getLongitude()));
+            if (tempMarker != null) {
+                totalDistance += MapController.getDistance(new LatLng(tempMarker.getLatitude(), tempMarker.getLongitude())
+                        , new LatLng(marker.getLatitude(), marker.getLongitude()));
             }
             tempMarker = marker;
         }
 
 
-        averageSpeed = totalDistance/totalTime;
+        averageSpeed = totalDistance / totalTime;
 
         mMap.addMarker(new MarkerOptions()
                 .position(new LatLng(summeryInfo.getStart_location().latitude, summeryInfo.getStart_location().longitude))
@@ -144,8 +153,8 @@ public class DrivingSummery extends AppCompatActivity implements OnMapReadyCallb
                 .position(new LatLng(summeryInfo.getEnd_location().latitude, summeryInfo.getEnd_location().longitude))
                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.home_pin)));
 
-        MapController.setCameraBounds(summeryInfo.getStart_location(),summeryInfo.getEnd_location(),mMap);
-        MapController.drawPolyline(getApplicationContext(),route,R.color.colorPrimaryDark,mMap);
+        MapController.setCameraBounds(summeryInfo.getStart_location(), summeryInfo.getEnd_location(), mMap);
+        MapController.drawPolyline(getApplicationContext(), route, R.color.colorPrimaryDark, mMap);
 
         txt_totalDistance.setText(MapController.generateDistanceString(totalDistance));
         txt_totalTime.setText(MapController.generateTimeString(totalTime));
@@ -156,7 +165,10 @@ public class DrivingSummery extends AppCompatActivity implements OnMapReadyCallb
         txt_scoreTotal.setText("" + totalScore);
     }
 
-    private void saveSummery(){
+    /**
+     * Save summery to database
+     */
+    private void saveSummery() {
         String speedMarkerList = new Gson().toJson(speedMap);
         Trip trip = new Trip();
         trip.setDateTime(summeryInfo.getStartTime());

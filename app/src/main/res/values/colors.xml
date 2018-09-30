@@ -7,8 +7,6 @@
     <color name="fabColor">#000</color>
     <color name="speedPointColor">#d79c13</color>
     <color name="criticalLocationColor">#c21e10</color>
-    <color name="roadSignColor">#255dea</color>
-    <color name="blackspotColor">#e61919</color>
     <color name="windowBackground">#fff</color>
     <color name="mainMenuBackground">#eceff0</color>
     <color name="alternativeRouteColor">#FF7C7A7B</color>

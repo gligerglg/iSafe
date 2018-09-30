@@ -48,6 +48,7 @@ public class NearbyMap extends FragmentActivity implements OnMapReadyCallback {
     private ConstraintLayout layout;
     private FirebaseDatabase database;
     private DatabaseReference myRef;
+    private String token;
 
     private double distance;
     private LatLng myLocationLatLng, incidentLatLng;
@@ -73,13 +74,13 @@ public class NearbyMap extends FragmentActivity implements OnMapReadyCallback {
         locusService.setRealTimeLocationListener(new LocusService.RealtimeListenerService() {
             @Override
             public void OnRealLocationChanged(Location location) {
-                if(location!=null){
+                if (location != null) {
                     myLocation = location;
-                    myLocationLatLng = new LatLng(location.getLatitude(),location.getLongitude());
+                    myLocationLatLng = new LatLng(location.getLatitude(), location.getLongitude());
                     dialog.dismiss();
-                    mMap.addMarker(new MarkerOptions().position(new LatLng(myLocation.getLatitude(),myLocation.getLongitude())).title("My Location")
+                    mMap.addMarker(new MarkerOptions().position(new LatLng(myLocation.getLatitude(), myLocation.getLongitude())).title("My Location")
                             .icon(BitmapDescriptorFactory.fromResource(R.drawable.home_pin)));
-                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(myLocation.getLatitude(),myLocation.getLongitude()),10.0f));
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(myLocation.getLatitude(), myLocation.getLongitude()), 10.0f));
                     locusService.stopRealTimeNetListening();
                 }
             }
@@ -92,101 +93,97 @@ public class NearbyMap extends FragmentActivity implements OnMapReadyCallback {
         mMap = googleMap;
         mMap.getUiSettings().setMapToolbarEnabled(false);
         //Move camera to Sri Lanka
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(7.5414423,80.6452276),10.0f));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(7.5414423, 80.6452276), 10.0f));
     }
 
     private void Init() {
         layout = findViewById(R.id.nearby_Layout);
         database = FirebaseDatabase.getInstance();
         myRef = database.getReference().child("RT-Incidents");
-        locusService = new LocusService(getApplicationContext(),false);
+        locusService = new LocusService(getApplicationContext(), false);
 
         restInterface = RESTClient.getInstance().create(RESTInterface.class);
-        sharedPreferences = getSharedPreferences("iSafe_settings",0);
-        radius = sharedPreferences.getInt("radius",0);
+        sharedPreferences = getSharedPreferences("iSafe_settings", 0);
+        radius = sharedPreferences.getInt("radius", 0);
+        token = MapController.getToken(getApplicationContext());
     }
 
-    public void getRealtimeIncidents(View view){
-        if(myLocation!=null){
-            if(isDataGet) {
+    public void getRealtimeIncidents(View view) {
+        if (myLocation != null) {
+            if (isDataGet) {
                 mMap.clear();
                 setProgressDialog("Downloading Real-Time Data");
                 getRealtimeData();
             }
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(myLocation.getLatitude(),myLocation.getLongitude()),13.0f));
-        }
-        else
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(myLocation.getLatitude(), myLocation.getLongitude()), 13.0f));
+        } else
             getGPSLocation();
     }
 
-    public void getBlackspotLocations(View view){
+    public void getBlackspotLocations(View view) {
         mMap.clear();
-        if(myLocation!=null) {
+        if (myLocation != null) {
             setProgressDialog("Downloading Blackspot Data");
             NearbyRequest request = new NearbyRequest();
             request.setLatitude(myLocation.getLatitude());
             request.setLongitude(myLocation.getLongitude());
             request.setRadius(radius);
             getBlackspotData(request);
-        }
-        else
+        } else
             setPopupMessage("Please enable GPS & try again!");
     }
 
-    public void getTrafficIncidents(View view){
+    public void getTrafficIncidents(View view) {
         mMap.clear();
-        if(myLocation!=null) {
+        if (myLocation != null) {
             setProgressDialog("Downloading TrafficSign Data");
             NearbyRequest request = new NearbyRequest();
             request.setLatitude(myLocation.getLatitude());
             request.setLongitude(myLocation.getLongitude());
             request.setRadius(radius);
             getTrafficData(request);
-        }
-        else
+        } else
             setPopupMessage("Please enable GPS & try again!");
 
     }
 
-    public void getSpeedLocations(View view){
+    public void getSpeedLocations(View view) {
         mMap.clear();
-        if(myLocation!=null) {
+        if (myLocation != null) {
             setProgressDialog("Downloading Speed Point Data");
             NearbyRequest request = new NearbyRequest();
             request.setLatitude(myLocation.getLatitude());
             request.setLongitude(myLocation.getLongitude());
             request.setRadius(radius);
             getSpeedLimitData(request);
-        }
-        else
+        } else
             setPopupMessage("Please enable GPS & try again!");
     }
 
-    public void getCriticalLocations(View view){
+    public void getCriticalLocations(View view) {
         mMap.clear();
-        if(myLocation!=null) {
+        if (myLocation != null) {
             setProgressDialog("Downloading Critical Data");
             NearbyRequest request = new NearbyRequest();
             request.setLatitude(myLocation.getLatitude());
             request.setLongitude(myLocation.getLongitude());
             request.setRadius(radius);
             getCriticalData(request);
-        }
-        else
+        } else
             setPopupMessage("Please enable GPS & try again!");
     }
 
 
-    private void setProgressDialog(String message){
+    private void setProgressDialog(String message) {
         dialog = new MaterialDialog.Builder(NearbyMap.this)
                 .content(message)
                 .cancelable(false)
-                .progress(true,0)
+                .progress(true, 0)
                 .show();
     }
 
-    private void getGPSLocation(){
-        if(myLocation==null){
+    private void getGPSLocation() {
+        if (myLocation == null) {
             if (locusService.isNetProviderEnabled()) {
                 locusService.startRealtimeNetListening(1000);
                 setProgressDialog("Calculating GPS Location");
@@ -195,8 +192,8 @@ public class NearbyMap extends FragmentActivity implements OnMapReadyCallback {
         }
     }
 
-    private void setPopupMessage(String message){
-        Snackbar snackbar = Snackbar.make(layout,message,Snackbar.LENGTH_LONG);
+    private void setPopupMessage(String message) {
+        Snackbar snackbar = Snackbar.make(layout, message, Snackbar.LENGTH_LONG);
         snackbar.show();
     }
 
@@ -206,47 +203,49 @@ public class NearbyMap extends FragmentActivity implements OnMapReadyCallback {
         getGPSLocation();
     }
 
-    /**REST Methods**/
-    private void getRealtimeData(){
-            isDataGet = false;
-            myRef.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    for(DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                        RealtimeIncident incident = snapshot.getValue(RealtimeIncident.class);
-                        incidentLatLng = new LatLng(incident.getLatitude(), incident.getLongitude());
-                        distance = MapController.getDistance(myLocationLatLng, incidentLatLng);
-                        if (distance <= radius) {
-                            mMap.addCircle(new CircleOptions().strokeWidth(2).radius(50).fillColor(0x2200ff00)
-                                    .strokeColor(Color.TRANSPARENT).center(new LatLng(incident.getLatitude(), incident.getLongitude())));
+    /**
+     * REST Methods
+     **/
+    private void getRealtimeData() {
+        isDataGet = false;
+        myRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    RealtimeIncident incident = snapshot.getValue(RealtimeIncident.class);
+                    incidentLatLng = new LatLng(incident.getLatitude(), incident.getLongitude());
+                    distance = MapController.getDistance(myLocationLatLng, incidentLatLng);
+                    if (distance <= radius) {
+                        mMap.addCircle(new CircleOptions().strokeWidth(2).radius(50).fillColor(0x2200ff00)
+                                .strokeColor(Color.TRANSPARENT).center(new LatLng(incident.getLatitude(), incident.getLongitude())));
 
-                            mMap.addMarker(new MarkerOptions()
-                                    .position(new LatLng(incident.getLatitude(), incident.getLongitude()))
-                                    .title(incident.getIncident_name())
-                                    .icon(BitmapDescriptorFactory.fromResource(MapController.mapMarkerIcon(incident.getIncident_name()))));
-                        }
+                        mMap.addMarker(new MarkerOptions()
+                                .position(new LatLng(incident.getLatitude(), incident.getLongitude()))
+                                .title(incident.getIncident_name())
+                                .icon(BitmapDescriptorFactory.fromResource(MapController.mapMarkerIcon(incident.getIncident_name()))));
                     }
-                    myRef.removeEventListener(this);
-                    dialog.dismiss();
                 }
+                myRef.removeEventListener(this);
+                dialog.dismiss();
+            }
 
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-                    setPopupMessage(databaseError.getMessage());
-                    dialog.dismiss();
-                    isDataGet = true;
-                }
-            });
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                setPopupMessage(databaseError.getMessage());
+                dialog.dismiss();
+                isDataGet = true;
+            }
+        });
 
     }
 
-    private void getTrafficData(NearbyRequest request){
+    private void getTrafficData(NearbyRequest request) {
         isDataGet = true;
         Call<List<TrafficSign>> call = restInterface.getTrafficData(request);
         call.enqueue(new Callback<List<TrafficSign>>() {
             @Override
             public void onResponse(Call<List<TrafficSign>> call, Response<List<TrafficSign>> response) {
-                if(response.body()!=null) {
+                if (response.body() != null) {
                     for (TrafficSign sign : response.body()) {
                         mMap.addCircle(new CircleOptions().strokeWidth(2).radius(50).fillColor(0x2200ff00)
                                 .strokeColor(Color.TRANSPARENT).center(new LatLng(sign.getLatitude(), sign.getLongitude())));
@@ -257,8 +256,7 @@ public class NearbyMap extends FragmentActivity implements OnMapReadyCallback {
                                 .icon(BitmapDescriptorFactory.fromResource(MapController.mapStaticIcon("Traffic"))));
                     }
                     dialog.dismiss();
-                }
-                else {
+                } else {
                     setPopupMessage("No Road Signs Found");
                     dialog.dismiss();
                 }
@@ -272,13 +270,13 @@ public class NearbyMap extends FragmentActivity implements OnMapReadyCallback {
         });
     }
 
-    private void getBlackspotData(NearbyRequest request){
+    private void getBlackspotData(NearbyRequest request) {
         isDataGet = true;
         Call<List<Blackspot>> call = restInterface.getBlackspotData(request);
         call.enqueue(new Callback<List<Blackspot>>() {
             @Override
             public void onResponse(Call<List<Blackspot>> call, Response<List<Blackspot>> response) {
-                if(response.body()!=null) {
+                if (response.body() != null) {
                     for (Blackspot sign : response.body()) {
                         mMap.addCircle(new CircleOptions().strokeWidth(2).radius(sign.getRadius()).fillColor(0x220000ff)
                                 .strokeColor(Color.TRANSPARENT).center(new LatLng(sign.getLatitude(), sign.getLongitude())));
@@ -289,8 +287,7 @@ public class NearbyMap extends FragmentActivity implements OnMapReadyCallback {
                                 .icon(BitmapDescriptorFactory.fromResource(MapController.mapStaticIcon("Black-Spot"))));
                     }
                     dialog.dismiss();
-                }
-                else {
+                } else {
                     setPopupMessage("No Black-spots Found");
                     dialog.dismiss();
                 }
@@ -305,13 +302,13 @@ public class NearbyMap extends FragmentActivity implements OnMapReadyCallback {
 
     }
 
-    private void getSpeedLimitData(NearbyRequest request){
+    private void getSpeedLimitData(NearbyRequest request) {
         isDataGet = true;
         Call<List<SpeedLimit>> call = restInterface.getSpeedLimitData(request);
         call.enqueue(new Callback<List<SpeedLimit>>() {
             @Override
             public void onResponse(Call<List<SpeedLimit>> call, Response<List<SpeedLimit>> response) {
-                if(response.body()!=null) {
+                if (response.body() != null) {
                     for (SpeedLimit sign : response.body()) {
                         mMap.addCircle(new CircleOptions().strokeWidth(2).radius(sign.getRadius()).fillColor(0x22ffff00)
                                 .strokeColor(Color.TRANSPARENT).center(new LatLng(sign.getLatitude(), sign.getLongitude())));
@@ -322,8 +319,7 @@ public class NearbyMap extends FragmentActivity implements OnMapReadyCallback {
                                 .icon(BitmapDescriptorFactory.fromResource(MapController.mapStaticIcon("Speed"))));
                     }
                     dialog.dismiss();
-                }
-                else {
+                } else {
                     setPopupMessage("No Speed Points Found");
                     dialog.dismiss();
                 }
@@ -337,13 +333,13 @@ public class NearbyMap extends FragmentActivity implements OnMapReadyCallback {
         });
     }
 
-    private void getCriticalData(NearbyRequest request){
+    private void getCriticalData(NearbyRequest request) {
         isDataGet = true;
         Call<List<CriticalLocation>> call = restInterface.getCriticalData(request);
         call.enqueue(new Callback<List<CriticalLocation>>() {
             @Override
             public void onResponse(Call<List<CriticalLocation>> call, Response<List<CriticalLocation>> response) {
-                if(response.body()!=null) {
+                if (response.body() != null) {
                     for (CriticalLocation sign : response.body()) {
                         mMap.addCircle(new CircleOptions().strokeWidth(2).radius(sign.getRadius()).fillColor(0x22ff0000)
                                 .strokeColor(Color.TRANSPARENT).center(new LatLng(sign.getLatitude(), sign.getLongitude())));
@@ -354,8 +350,7 @@ public class NearbyMap extends FragmentActivity implements OnMapReadyCallback {
                                 .icon(BitmapDescriptorFactory.fromResource(MapController.mapStaticIcon("Critical"))));
                     }
                     dialog.dismiss();
-                }
-                else {
+                } else {
                     setPopupMessage("No Critical Location Found");
                     dialog.dismiss();
                 }
