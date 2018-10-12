@@ -33,11 +33,12 @@ public class DriverHistory extends AppCompatActivity {
         Init();
     }
 
+    /**Initializing**/
     private void Init() {
         txt_totalDistance = findViewById(R.id.txt_history_distance);
         txt_totalTime = findViewById(R.id.txt_history_duration);
         txt_totalScore = findViewById(R.id.txt_history_points);
-        token = MapController.getToken(getApplicationContext());
+
 
         tripDB = Room.databaseBuilder(getApplicationContext(),TripDB.class,"TripDB").fallbackToDestructiveMigration()
                 .allowMainThreadQueries()

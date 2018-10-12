@@ -41,10 +41,7 @@ public class SplashScreen extends AppCompatActivity {
                         editor.commit();
                     }
                     else{
-                        if(sharedPref.getBoolean("staylogin",false))
-                            intent = new Intent(SplashScreen.this,MainMenu.class);
-                        else
-                            intent = new Intent(SplashScreen.this,LoginActivity.class);
+                        intent = new Intent(SplashScreen.this,LoginActivity.class);
                     }
 
                     startActivity(intent);

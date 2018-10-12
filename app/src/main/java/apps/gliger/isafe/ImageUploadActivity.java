@@ -7,11 +7,15 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -23,6 +27,13 @@ import com.google.firebase.storage.UploadTask;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import REST_Controller.RESTClient;
+import REST_Controller.RESTInterface;
+import REST_Controller.UploadURLRequest;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class ImageUploadActivity extends AppCompatActivity {
 
     private static final int PICK_IMAGE_REQUEST = 120;
@@ -30,10 +41,15 @@ public class ImageUploadActivity extends AppCompatActivity {
     private ImageView previewProfile,previewnic;
     int i = 0;
     private Uri uri;
+    private LinearLayout layout;
+    private boolean isProfileSet = false, isIdSet = false, allDone = false;
+    private Button btn_upload;
+    private String userCode="";
     private StorageReference mStorageRef;
     private MaterialDialog dialog;
     private String profileURL = "";
     private String nicURL = "";
+    private RESTInterface restInterface;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,13 +58,18 @@ public class ImageUploadActivity extends AppCompatActivity {
 
         previewProfile=findViewById(R.id.img_profile_upload);
         previewnic=findViewById(R.id.img_license_upload);
+        btn_upload = findViewById(R.id.btn_upload_images);
         mStorageRef = FirebaseStorage.getInstance().getReference();
+        userCode = getIntent().getStringExtra("code");
+        layout = findViewById(R.id.layout_image_upload);
+        restInterface = RESTClient.getInstance().create(RESTInterface.class);
 
         previewProfile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 i=0;
-                showAlert("Profile Image");
+                if(!isProfileSet)
+                    showAlert("Profile Image");
             }
 
         });
@@ -56,12 +77,33 @@ public class ImageUploadActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 i=1;
-                showAlert("Image Of NIC");
+                if(!isIdSet)
+                    showAlert("Image Of NIC");
             }
 
         });
+
+        btn_upload.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(!isProfileSet && !isIdSet)
+                    setMessage("Please capture profile & National ID images");
+                else if(!isProfileSet)
+                    setMessage("Please capture profile image");
+                else if(!isIdSet)
+                    setMessage("Please capture National ID image");
+                else{
+                    if(allDone)
+                        startActivity(new Intent(getApplicationContext(),LoginActivity.class));
+                    else
+                        updateProfileData();
+                }
+
+            }
+        });
     }
 
+    /**choose image from gallery**/
     private void chooseImage() {
         Intent intent=new Intent();
         intent.setType("image/*");
@@ -70,6 +112,7 @@ public class ImageUploadActivity extends AppCompatActivity {
 
     }
 
+    /**show alert box choose or capture image**/
     public void showAlert(String string)
     {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -101,6 +144,7 @@ public class ImageUploadActivity extends AppCompatActivity {
         }
     }
 
+    /** Set images to bitmap**/
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
 
@@ -112,6 +156,10 @@ public class ImageUploadActivity extends AppCompatActivity {
                 try {
                     Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
                     previewProfile.setImageBitmap(bitmap);
+                    isProfileSet = true;
+
+                    setProgressDialog("Uploading Profile Image");
+                    imageUpload(previewProfile,userCode,"Profile");
 
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -124,7 +172,10 @@ public class ImageUploadActivity extends AppCompatActivity {
                 Bitmap imageBitmap = (Bitmap) extras.get("data");
                 //ImageURL=saveToInternalStorage(imageBitmap);
                 previewProfile.setImageBitmap(imageBitmap);
+                isProfileSet = true;
 
+                setProgressDialog("Uploading Profile Image");
+                imageUpload(previewProfile,userCode,"Profile");
 
             }
 
@@ -137,6 +188,9 @@ public class ImageUploadActivity extends AppCompatActivity {
                 try {
                     Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
                     previewnic.setImageBitmap(bitmap);
+                    isIdSet = true;
+                    setProgressDialog("Uploading NID Image");
+                    imageUpload(previewProfile,userCode,"NID");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -148,12 +202,14 @@ public class ImageUploadActivity extends AppCompatActivity {
                 Bitmap imageBitmap = (Bitmap) extras.get("data");
                 //ImageURL=saveToInternalStorage(imageBitmap);
                 previewnic.setImageBitmap(imageBitmap);
-
-
+                isIdSet = true;
+                setProgressDialog("Uploading NID Image");
+                imageUpload(previewProfile,userCode,"NID");
             }
         }
     }
 
+    /**upload single user profile pic and nic**/
     private void imageUpload(ImageView imageView, String token, final String type){
         // Get the data from an ImageView as bytes
         imageView.setDrawingCacheEnabled(true);
@@ -163,33 +219,63 @@ public class ImageUploadActivity extends AppCompatActivity {
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
         byte[] data = baos.toByteArray();
 
-        UploadTask uploadTask = mStorageRef.child(token).child(type).putBytes(data);
+        UploadTask uploadTask = mStorageRef.child("User").child(token).child(type).putBytes(data);
         uploadTask.addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception exception) {
                 // Handle unsuccessful uploads
+                setMessage("Image Upload failed!");
                 dialog.dismiss();
             }
         }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                if(type=="Profile")
+                if(type.equals("Profile"))
                     profileURL = taskSnapshot.getDownloadUrl().toString();
                 else
                     nicURL = taskSnapshot.getDownloadUrl().toString();
                 dialog.dismiss();
-
-                if(profileURL!=null && nicURL!=null)
-                    startActivity(new Intent(getApplicationContext(),LoginActivity.class));
             }
         });
     }
 
+    /**progress dialog box**/
     private void setProgressDialog(String message) {
         dialog = new MaterialDialog.Builder(ImageUploadActivity.this)
                 .content(message)
                 .cancelable(false)
                 .progress(true, 0)
                 .show();
+    }
+
+    private void setMessage(String message){
+        Snackbar snackbar = Snackbar.make(layout,message,Snackbar.LENGTH_LONG);
+        snackbar.show();
+    }
+
+    /**upload to severdb**/
+    private void updateProfileData(){
+
+        if(isProfileSet && isIdSet){
+            Call<Void> call = restInterface.updateProfileData(new UploadURLRequest(nicURL,userCode,profileURL));
+            call.enqueue(new Callback<Void>() {
+                @Override
+                public void onResponse(Call<Void> call, Response<Void> response) {
+                    if(response.code()==200){
+                        allDone = true;
+                        setMessage("Registration Complete!");
+                        btn_upload.setText("Goto Login");
+                    }
+                    else
+                        setMessage("Registration failed. Please try again");
+                }
+
+                @Override
+                public void onFailure(Call<Void> call, Throwable t) {
+                    setMessage("Error : " + t.getMessage());
+                }
+            });
+        }
+
     }
 }

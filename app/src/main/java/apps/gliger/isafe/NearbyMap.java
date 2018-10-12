@@ -97,6 +97,7 @@ public class NearbyMap extends FragmentActivity implements OnMapReadyCallback {
     }
 
     private void Init() {
+        token = getIntent().getStringExtra("token");
         layout = findViewById(R.id.nearby_Layout);
         database = FirebaseDatabase.getInstance();
         myRef = database.getReference().child("RT-Incidents");
@@ -105,7 +106,7 @@ public class NearbyMap extends FragmentActivity implements OnMapReadyCallback {
         restInterface = RESTClient.getInstance().create(RESTInterface.class);
         sharedPreferences = getSharedPreferences("iSafe_settings", 0);
         radius = sharedPreferences.getInt("radius", 0);
-        token = MapController.getToken(getApplicationContext());
+
     }
 
     public void getRealtimeIncidents(View view) {
@@ -283,7 +284,6 @@ public class NearbyMap extends FragmentActivity implements OnMapReadyCallback {
 
                         mMap.addMarker(new MarkerOptions()
                                 .position(new LatLng(sign.getLatitude(), sign.getLongitude()))
-                                .title(sign.getCondition() + "")
                                 .icon(BitmapDescriptorFactory.fromResource(MapController.mapStaticIcon("Black-Spot"))));
                     }
                     dialog.dismiss();

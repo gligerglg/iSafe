@@ -3,25 +3,19 @@ package REST_Controller;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class UserRegister {
+public class ProfileResponse {
+    @SerializedName("id")
+    @Expose
+    private Integer id;
     @SerializedName("username")
     @Expose
     private String username;
-    @SerializedName("password")
+    @SerializedName("phonenumber")
     @Expose
-    private String password;
-    @SerializedName("firstName")
-    @Expose
-    private String firstName;
-    @SerializedName("lastName")
-    @Expose
-    private String lastName;
+    private String phonenumber;
     @SerializedName("email")
     @Expose
     private String email;
-    @SerializedName("phonenumber")
-    @Expose
-    private Integer phonenumber;
     @SerializedName("nic")
     @Expose
     private String nic;
@@ -31,9 +25,9 @@ public class UserRegister {
     @SerializedName("dob")
     @Expose
     private String dob;
-    @SerializedName("licenseUrl")
+    @SerializedName("isConfirmed")
     @Expose
-    private String licenseUrl;
+    private Integer isConfirmed;
     @SerializedName("dateOfIssueLicense")
     @Expose
     private String dateOfIssueLicense;
@@ -43,11 +37,23 @@ public class UserRegister {
     @SerializedName("imageOfDriverUrl")
     @Expose
     private String imageOfDriverUrl;
+    @SerializedName("keycloakId")
+    @Expose
+    private String keycloakId;
     @SerializedName("licenseNum")
     @Expose
-    private String license_num;
+    private String licenseNum;
+    @SerializedName("idUrl")
+    @Expose
+    private String idUrl;
 
+    public Integer getId() {
+        return id;
+    }
 
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
     public String getUsername() {
         return username;
@@ -57,36 +63,12 @@ public class UserRegister {
         this.username = username;
     }
 
-    public String getPassword() {
-        return password;
+    public String getPhonenumber() {
+        return phonenumber;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public String getLicense_num() {
-        return license_num;
-    }
-
-    public void setLicense_num(String license_num) {
-        this.license_num = license_num;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
+    public void setPhonenumber(String phonenumber) {
+        this.phonenumber = phonenumber;
     }
 
     public String getEmail() {
@@ -95,14 +77,6 @@ public class UserRegister {
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public Integer getPhonenumber() {
-        return phonenumber;
-    }
-
-    public void setPhonenumber(Integer phonenumber) {
-        this.phonenumber = phonenumber;
     }
 
     public String getNic() {
@@ -129,12 +103,12 @@ public class UserRegister {
         this.dob = dob;
     }
 
-    public String getLicenseUrl() {
-        return licenseUrl;
+    public Integer getIsConfirmed() {
+        return isConfirmed;
     }
 
-    public void setLicenseUrl(String licenseUrl) {
-        this.licenseUrl = licenseUrl;
+    public void setIsConfirmed(Integer isConfirmed) {
+        this.isConfirmed = isConfirmed;
     }
 
     public String getDateOfIssueLicense() {
@@ -161,4 +135,27 @@ public class UserRegister {
         this.imageOfDriverUrl = imageOfDriverUrl;
     }
 
+    public String getKeycloakId() {
+        return keycloakId;
+    }
+
+    public void setKeycloakId(String keycloakId) {
+        this.keycloakId = keycloakId;
+    }
+
+    public String getLicenseNum() {
+        return licenseNum;
+    }
+
+    public void setLicenseNum(String licenseNum) {
+        this.licenseNum = licenseNum;
+    }
+
+    public String getIdUrl() {
+        return idUrl;
+    }
+
+    public void setIdUrl(String idUrl) {
+        this.idUrl = idUrl;
+    }
 }

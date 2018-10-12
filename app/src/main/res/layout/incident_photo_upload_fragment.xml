@@ -23,7 +23,7 @@
 
     <Button
         android:id="@+id/btn_report_incident"
-        style="@style/btn_style"
+        android:background="@drawable/button_style"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"

@@ -3,6 +3,7 @@ package apps.gliger.isafe;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.location.Location;
+import android.util.Log;
 
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -12,7 +13,13 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.RoundCap;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -77,12 +84,13 @@ public class MapController {
                 return R.drawable.hazard_pin;
             case "Landslip":
                 return R.drawable.landslip_pin;
-            case "TrafficSign-Jam":
+            case "Traffic-Jam":
                 return R.drawable.traffic_pin;
         }
         return 0;
     }
 
+    /** Set Icons to each static incidents**/
     public static int mapStaticIcon(String type) {
         switch (type) {
             case "Black-Spot":
@@ -97,6 +105,7 @@ public class MapController {
         return 0;
     }
 
+    /**Generate distance as km or m**/
     public static String generateDistanceString(double Distance) {
         String distance = "";
         if (Distance >= 1000) {
@@ -118,6 +127,7 @@ public class MapController {
         return distance;
     }
 
+    /**Generate time as hours or minutes**/
     public static String generateTimeString(double Time) {
         String time = "";
         if (Time >= 3600) {
@@ -137,19 +147,21 @@ public class MapController {
     }
 
     public static String generateSimpleTimeString(double Time) {
+        double time_val = Time;
         String time = "";
-        if (Time >= 3600) {
-            time += String.format("%.0f", (Time / 3600)) + " H ";
-            Time %= 3600;
-        } else if (Time >= 60) {
-            time += String.format("%.0f", (Time / 60)) + " m ";
-            Time %= 60;
-        } else if (Time < 60)
-            time += String.format("%.0f", Time) + " s ";
+        if (time_val >= 3600) {
+            time += String.format("%.0f", (time_val / 3600)) + " H ";
+            time_val %= 3600;
+        } else if (time_val >= 60) {
+            time += String.format("%.0f", (time_val / 60)) + " m ";
+            time_val %= 60;
+        } else if (time_val < 60)
+            time += String.format("%.0f", time_val) + " s ";
 
         return time;
     }
 
+    /**get speed as kmph**/
     public static String generateSpeedString(double Speed) {
         String speed = "";
         //Speed *=(18/5.0);
@@ -186,6 +198,7 @@ public class MapController {
         return newPoint;
     }
 
+    /**calculate bearing using nearest two Location objects**/
     public static float CalculateBearingAngle(Location startPoint, Location endPoint) {
 
         double startLatitude = startPoint.getLatitude();
@@ -201,15 +214,10 @@ public class MapController {
         return (float) Math.toDegrees(Theta);
     }
 
-    public static void saveToken(Context context, String token) {
-        SharedPreferences sharedPref = context.getSharedPreferences("iSafe_settings", 0);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString("token", token);
-        editor.commit();
+    /**Date format**/
+    public static String formatDate(Date date){
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        return sdf.format(date);
     }
 
-    public static String getToken(Context context) {
-        SharedPreferences sharedPref = context.getSharedPreferences("iSafe_settings", 0);
-        return sharedPref.getString("token", "");
-    }
 }

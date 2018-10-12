@@ -52,4 +52,5 @@
         android:src="@drawable/icon_gps_location"
         app:backgroundTint="@color/colorPrimaryDark" />
 
+
 </android.support.design.widget.CoordinatorLayout>

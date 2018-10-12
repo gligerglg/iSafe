@@ -4,11 +4,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/layout_profile"
     tools:context=".ProfileActivity">
 
 
         <ImageView
-            android:id="@+id/imageView"
+            android:id="@+id/img_profile"
             android:layout_width="150dp"
             android:layout_height="150dp"
             android:layout_marginStart="8dp"
@@ -26,12 +27,12 @@
             android:layout_marginStart="8dp"
             android:layout_marginTop="12dp"
             android:layout_marginEnd="8dp"
-            android:text="Thamokshi Devganee"
+            android:text="Full Name"
             android:textSize="18sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/imageView" />
+            app:layout_constraintTop_toBottomOf="@+id/img_profile" />
 
         <ScrollView
             android:id="@+id/scrollView2"
@@ -113,7 +114,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:layout_marginEnd="20dp"
-                    android:text="957664105v"
+                    android:text="000000000v"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/pInfo" />
 
@@ -123,7 +124,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:layout_marginEnd="20dp"
-                    android:text="22/09/1995"
+                    android:text="YYYY-MM-DD"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/inputnic" />
 
@@ -133,7 +134,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:layout_marginEnd="20dp"
-                    android:text="Bandaragama"
+                    android:text="Address"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/inputdob" />
 
@@ -153,7 +154,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:layout_marginEnd="20dp"
-                    android:text="077285824"
+                    android:text="0000000000"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/con" />
 
@@ -174,7 +175,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:layout_marginEnd="20dp"
-                    android:text="dev@gmail.com"
+                    android:text="isafe@gmail.com"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/inputtel"
                     android:layout_marginRight="20dp" />
@@ -209,7 +210,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:layout_marginEnd="20dp"
-                    android:text="B120345"
+                    android:text="B000000"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/linfo"
                     android:layout_marginRight="20dp" />
@@ -231,7 +232,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:layout_marginEnd="20dp"
-                    android:text="05/05/2015"
+                    android:text="YYYY-MM-DD"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/inputLnum"
                     android:layout_marginRight="20dp" />
@@ -253,7 +254,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:layout_marginEnd="20dp"
-                    android:text="05/05/2020"
+                    android:text="YYYY-MM-DD"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/inputissueD"
                     android:layout_marginRight="20dp" />

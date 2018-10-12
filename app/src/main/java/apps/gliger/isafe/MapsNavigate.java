@@ -120,8 +120,8 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
     private MaterialSheetFab<Fab> materialSheetFab;
     private Handler bearingHandler, realtimeIncidentHandler;
     private Handler speedPointHandler, criticalLocationHandler, trafficSignHandler, blackspotHandler;
-    private Handler speedCalcHandler;
     private int total_distance, total_duration;
+    private SharedPreferences sharedPref;
 
     private static final int bearingInterval = 2000;
     private double speed = 0.0;
@@ -180,7 +180,6 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
     private int score_addIncident = 0, score_removeIncident = 0, score_OverSpeed = 0;
     private String startTime;
     private StaticIncidentData staticIncidents;
-    private Stopwatch stopwatch;
     private static int camRequestCode = 100;
     private ImageView btn_capture;
     private MaterialDialog dialog;
@@ -192,11 +191,11 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
     private String token;
 
     private List<StaticVisualizeIncident> staticVisualizeIncidentList;
+    private int interval_watch = 0;
 
     ///////////////////////////////
     private Queue<LatLng> pointQueue;
     private Handler mokeLocationGenerateHandler;
-
     //////////////////////////////
 
 
@@ -430,7 +429,7 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
         btn_incident_traffic.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                setIncident("TrafficSign-Jam");
+                setIncident("Traffic-Jam");
                 incidentSheet.setState(BottomSheetBehavior.STATE_HIDDEN);
                 img_position.setVisibility(View.VISIBLE);
             }
@@ -573,11 +572,12 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
     private void Init() {
 
         String dataset = getIntent().getStringExtra("route");
+        sharedPref = getSharedPreferences("iSafe_settings", 0);
         criticalLocationList = new ArrayList<>();
         trafficSignList = new ArrayList<>();
         blackSpotList = new ArrayList<>();
         speedLimitPointList = new ArrayList<>();
-        token = MapController.getToken(getApplicationContext());
+        token = getIntent().getStringExtra("token");
 
         staticVisualizeIncidentList = new ArrayList<>();
         if (dataset != null) {
@@ -611,7 +611,6 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
         criticalLocationHandler = new Handler();
         trafficSignHandler = new Handler();
         blackspotHandler = new Handler();
-        speedCalcHandler = new Handler();
 
         btn_slideDown = findViewById(R.id.btn_sheetDown);
         btn_voiceAssistant = findViewById(R.id.btn_voiceAssistant);
@@ -669,8 +668,6 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
         materialSheetFab = new MaterialSheetFab<>(fab, sheetView, overlay,
                 sheetColor, fabColor);
 
-        stopwatch = new Stopwatch();
-
         ////////////////////////////////////////////////////
         //txt_an_speed = findViewById(R.id.txt_androidspeed);
         /////////////////////////////////////////////
@@ -693,7 +690,6 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         locusService.startRealtimeGPSListening(0);
-        stopwatch.start();
 
         bearingHandler.postDelayed(bearingThread, bearingInterval);
         realtimeIncidentHandler.postDelayed(realtimeIncidentThread, realtimeIncidentInterval);
@@ -711,7 +707,6 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
         super.onPause();
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         locusService.stopRealTimeGPSListening();
-        stopwatch.pause();
 
         bearingHandler.removeCallbacks(bearingThread);
         realtimeIncidentHandler.removeCallbacks(realtimeIncidentThread);
@@ -740,18 +735,25 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
         return new BigInteger(1, messageDigest.digest()).toString(16);
     }
 
+
+
     /**
      * Thread for change bearing
      */
     private Runnable bearingThread = new Runnable() {
         @Override
         public void run() {
+            interval_watch++;
             //Calculate Bearing
             if (!isMapDraggable) {
                 if (myLocation != null) {
 
                     if (bearingLocation != null) {
                         updateBearing(MapController.CalculateBearingAngle(bearingLocation, myLocation));
+                        /*if(MapController.getDistance(myLatLanLocation,new LatLng(bearingLocation.getLatitude(),bearingLocation.getLongitude()))<20)
+                            stopwatchHandler.removeCallbacks(stopwatchThread);
+                        else
+                            stopwatchHandler.postDelayed(stopwatchThread,1000);*/
                     }
                     bearingLocation = myLocation;
                 }
@@ -825,6 +827,7 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+    /**Get icons for each real time incidents**/
     private int getIncidentImage(String incident_name) {
         switch (incident_name) {
             case "Accident":
@@ -837,20 +840,25 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
                 return R.drawable.animal;
             case "Landslip":
                 return R.drawable.icon_landslip;
-            case "TrafficSign-Jam":
+            case "Traffic-Jam":
                 return R.drawable.traffic;
         }
         return 0;
     }
 
+    /**set incident in current location**/
     private void setIncident(String incidentType) {
-        LatLng position = myLatLanLocation;
-        if (myLatLanLocation != null) {
-            String hashID = generateHashID(position.latitude, position.longitude, incidentType);
-            RealtimeIncident incident = new RealtimeIncident(hashID, incidentType, token, getCurrentDateTime(), position.latitude, position.longitude);
+        if(token!=null){
+            LatLng position = myLatLanLocation;
+            if (myLatLanLocation != null) {
+                String hashID = generateHashID(position.latitude, position.longitude, incidentType);
+                RealtimeIncident incident = new RealtimeIncident(hashID, incidentType, token, new Date().toString(), position.latitude, position.longitude);
 
-            captureIncidentImage(incident);
+                captureIncidentImage(incident);
+            }
         }
+        else
+            setMessage("Please login to access this service");
     }
 
     private void setPopupMessage(String title, String message, int icon, boolean voiceAssist) {
@@ -866,6 +874,7 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
             speakNotification(message);
     }
 
+    /**get nearest route point as my real location using location updates**/
     private LatLng getNearestRoutePoint(LatLng myLocation) {
         LatLng min_point = route.getPoints().get(0);
         for (LatLng point : continuousPath) {
@@ -883,6 +892,7 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
         return min_point;
     }
 
+    /**if user location is out of route then reroute**/
     private void reRoute() {
         //locusService.stopRealTimeGPSListening();
         ///////////////
@@ -922,6 +932,7 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
         builder.create().show();
     }
 
+    /**Report real time incidents**/
     private void realtimeIncidentReport() {
         for (RealtimeIncident point : realtimeIncidentHashMap.values()) {
 
@@ -959,6 +970,7 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+    /**Notify nearest speed point location regarding Geofencing & dynamic radius**/
     private void speedPointReport() {
         for (SpeedLimit point : speedLimitPointList) {
             if (MapController.getDistance(myLatLanLocation, new LatLng(point.getLatitude(), point.getLongitude())) <= calculateDynamicRadius(point.getRadius())) {
@@ -977,6 +989,7 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+    /**Notify critical location regarding Geofencing & dynamic radius**/
     private void criticalLocationReport() {
         for (CriticalLocation point : criticalLocationList) {
             if (MapController.getDistance(myLatLanLocation, new LatLng(point.getLatitude(), point.getLongitude())) <= calculateDynamicRadius(point.getRadius())) {
@@ -995,6 +1008,7 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+    /**Notify traffic sign location regarding Geofencing & dynamic radius**/
     private void trafficSignReport() {
         int trafficRadius = 0;
         for (TrafficSign point : trafficSignList) {
@@ -1030,6 +1044,7 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+    /**Notify blackspot location regarding Geofencing & dynamic radius**/
     private void blackspotReport() {
         for (Blackspot point : blackSpotList) {
             if (MapController.getDistance(myLatLanLocation, new LatLng(point.getLatitude(), point.getLongitude())) <= calculateDynamicRadius(point.getRadius())) {
@@ -1062,6 +1077,7 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+    /**draw a path considering speed limits**/
     private void drawSpeedPath() {
         System.out.println("Inside Draw Speed");
         List<LatLng> speedList = new ArrayList<>();
@@ -1075,6 +1091,7 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+    /**draw a path considering critical location**/
     private void drawCriticalPath() {
         System.out.println("Inside Draw Critical");
         List<LatLng> speedList = new ArrayList<>();
@@ -1108,6 +1125,7 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
         return simpleDateFormat.format(calendar.getTime());
     }
 
+    /**generate incident time for voice assistant notification**/
     private String generateIncidentTime(String incidentTime) {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String returnTime = "";
@@ -1229,7 +1247,7 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
         summeryInfo.setScore_overSpeed(score_OverSpeed);
         summeryInfo.setScore_removeIncidents(score_removeIncident);
         summeryInfo.setSpeedMarkerList(speedMap);
-        summeryInfo.setTotal_time(stopwatch.stop());
+        summeryInfo.setTotal_time(interval_watch);
         summeryInfo.setRoute("To " + route.getEndLocation());
         summeryInfo.setStartTime(startTime);
         summeryInfo.setEndJourney(isEndJourney);
@@ -1252,18 +1270,20 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
                 blackSpotList = staticIncidents.getBlackSpots();
                 speedLimitPointList = staticIncidents.getSpeedLimits();
 
-                for (CriticalLocation point : criticalLocationList)
-                    staticVisualizeIncidentList.add(new StaticVisualizeIncident(point.getLatitude(), point.getLongitude(), "Critical Location", point.getRadius()));
+                try{
+                    for (CriticalLocation point : criticalLocationList)
+                        staticVisualizeIncidentList.add(new StaticVisualizeIncident(point.getLatitude(), point.getLongitude(), "Critical Location", point.getRadius()));
 
-                for (TrafficSign point : trafficSignList)
-                    staticVisualizeIncidentList.add(new StaticVisualizeIncident(point.getLatitude(), point.getLongitude(), "Road Sign", 50));
+                    for (TrafficSign point : trafficSignList)
+                        staticVisualizeIncidentList.add(new StaticVisualizeIncident(point.getLatitude(), point.getLongitude(), "Road Sign", 50));
 
-                for (Blackspot point : blackSpotList)
-                    staticVisualizeIncidentList.add(new StaticVisualizeIncident(point.getLatitude(), point.getLongitude(), "Black-Spot", point.getRadius()));
+                    for (Blackspot point : blackSpotList)
+                        staticVisualizeIncidentList.add(new StaticVisualizeIncident(point.getLatitude(), point.getLongitude(), "Black-Spot", point.getRadius()));
 
-                for (SpeedLimit point : speedLimitPointList)
-                    staticVisualizeIncidentList.add(new StaticVisualizeIncident(point.getLatitude(), point.getLongitude(), "Speed Point", point.getRadius()));
+                    for (SpeedLimit point : speedLimitPointList)
+                        staticVisualizeIncidentList.add(new StaticVisualizeIncident(point.getLatitude(), point.getLongitude(), "Speed Point", point.getRadius()));
 
+                }catch (Exception ex){}
             }
         }
     }
@@ -1291,7 +1311,7 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
                 if (currentIncident != null) {
                     if (!incident.getIncident_name().equals(currentIncident.getIncident_name())) {
                         myRef.child(incident.getIncident_id()).setValue(incident);
-                        sendRTIncident(new RestRTIncident(incident.getLatitude(), incident.getLongitude(), new Date(), incident.getIncident_name(), incident.getIncident_name()));
+                        sendRTIncident(new RestRTIncident(incident.getLatitude(), incident.getLongitude(), MapController.formatDate(new Date()), incident.getIncident_name(), incident.getIncident_name()));
                         score_addIncident += 25;
                     } else
                         setMessage("This incident is already exists!");
@@ -1343,18 +1363,20 @@ public class MapsNavigate extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void sendRTIncident(RestRTIncident incident) {
-        Call<Void> call = restInterface.sendIncidetDatatoServer(getResources().getString(R.string.token), incident);
-        call.enqueue(new Callback<Void>() {
-            @Override
-            public void onResponse(Call<Void> call, Response<Void> response) {
-                setMessage(response.code() + "");
-            }
+        try{
+            Call<Void> call = restInterface.sendIncidetDatatoServer("Bearer " + token, incident);
+            call.enqueue(new Callback<Void>() {
+                @Override
+                public void onResponse(Call<Void> call, Response<Void> response) {
+                    Log.i("REST","Successfull POST Incident");
+                }
 
-            @Override
-            public void onFailure(Call<Void> call, Throwable t) {
-                setMessage(t.getMessage());
-            }
-        });
+                @Override
+                public void onFailure(Call<Void> call, Throwable t) {
+                    setMessage(t.getMessage());
+                }
+            });
+        }catch (Exception e){}
     }
 
     /**

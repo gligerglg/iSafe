@@ -23,6 +23,7 @@ public class DriverHistoryAdapter extends RecyclerView.Adapter<DriverHistoryAdap
         this.trips = trips;
     }
 
+    /**Inflate one card**/
     @Override
     public HistoryHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         context = parent.getContext();

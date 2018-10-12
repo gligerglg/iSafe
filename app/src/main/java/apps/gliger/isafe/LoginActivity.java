@@ -15,6 +15,7 @@ import retrofit2.Call;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
@@ -37,11 +38,11 @@ public class LoginActivity extends AppCompatActivity {
 
     private EditText usernametxt, passwordtxt;
     private TextView signuptxt;
+    private Button guest;
     private RESTInterface restInterface;
     private MaterialDialog dialog;
     private ConstraintLayout layout;
     private LottieAnimationView animationView;
-    private CheckBox checkBox;
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor editor;
 
@@ -56,13 +57,14 @@ public class LoginActivity extends AppCompatActivity {
         signuptxt = findViewById(R.id.txtsignup);
         layout = findViewById(R.id.layout_login);
         animationView = findViewById(R.id.lottieLogin);
-        checkBox = findViewById(R.id.chk_staylogin);
+        guest = findViewById(R.id.btn_guest);
 
         sharedPreferences = getSharedPreferences("iSafe_settings",0);
         editor = sharedPreferences.edit();
 
         animationView.addColorFilter(new PorterDuffColorFilter(getResources().getColor(R.color.colorPrimaryDark), PorterDuff.Mode.ADD));
         animationView.playAnimation();
+        editor.putBoolean("guest",true);
 
         restInterface = RESTClient.getInstance().create(RESTInterface.class);
 
@@ -74,14 +76,10 @@ public class LoginActivity extends AppCompatActivity {
             }
         }));
 
-        checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        guest.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                if(b)
-                    editor.putBoolean("staylogin",true);
-                else
-                    editor.putBoolean("staylogin",false);
-                editor.commit();
+            public void onClick(View view) {
+                startActivity(new Intent(getApplicationContext(),MainMenu.class));
             }
         });
 
@@ -121,13 +119,16 @@ public class LoginActivity extends AppCompatActivity {
                     if (response.code() == 200) {
                         LoginResponse loginResponse = response.body();
                         if (!TextUtils.isEmpty(loginResponse.getAccessToken())) {
-                            MapController.saveToken(getApplicationContext(), loginResponse.getAccessToken());
-                            startActivity(new Intent(getApplicationContext(), MainMenu.class));
-                        } else
+                            Intent intent = new Intent(getApplicationContext(),MainMenu.class);
+                            intent.putExtra("token",loginResponse.getAccessToken());
+                            startActivity(intent);
+                        } else {
                             setMessage("Invalid Username or Password");
+                        }
 
-                    } else
-                        setMessage("Network Error! Please try again");
+                    } else {
+                        setMessage("Network Error : " + response.code());
+                    }
                 }
                 dialog.dismiss();
             }

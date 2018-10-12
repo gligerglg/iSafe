@@ -1,11 +1,13 @@
 package apps.gliger.isafe;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -37,6 +39,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
@@ -45,8 +48,13 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.google.gson.Gson;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -75,6 +83,8 @@ public class Navigation extends AppCompatActivity implements OnMapReadyCallback,
     private List<Polyline> polylines;
     private String destination_name;
     private Route selected_path;
+    private MataraLatLngGenerator mataraLatLngGenerator;
+    private boolean failedRoute = false;
     private HashMap<Polyline, Route> routeHashMap = new HashMap<>();
     private static final int[] COLORS = new int[]{R.color.colorPrimary, R.color.alternativeRouteColor};
 
@@ -104,6 +114,7 @@ public class Navigation extends AppCompatActivity implements OnMapReadyCallback,
         mapFragment.getMapAsync(this);
 
         Init();
+        token = getIntent().getStringExtra("token");
 
         locusService.setRealTimeLocationListener(new LocusService.RealtimeListenerService() {
             @Override
@@ -143,6 +154,26 @@ public class Navigation extends AppCompatActivity implements OnMapReadyCallback,
                     } else if (myPosition != null && destination == null)
                         setMessage("Set a Destination");
                 }
+
+
+
+                /*String dataset = "";
+                File sdcard = getApplicationContext().getExternalFilesDir(null);
+                File file = new File(sdcard, "matara.txt");
+                if(mataraList!=null)
+                {
+                    for(LatLng point : mataraList)
+                        dataset += "\nlatLngList.add(new LatLng(" + point.latitude + "," + point.longitude + "));";
+                    try {
+                        MapController.writeToFile(dataset,file);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        setMessage("Failed");
+                    }
+                    Toast.makeText(getApplicationContext(),dataset,Toast.LENGTH_LONG).show();
+                    setMessage("OK");
+
+                }*/
             }
         });
 
@@ -150,18 +181,20 @@ public class Navigation extends AppCompatActivity implements OnMapReadyCallback,
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(Place place) {
-                destination = place.getLatLng();
-                destination_name = place.getName().toString();
-                mMap.clear();
-                if (myPosition != null)
-                    mMap.addMarker(new MarkerOptions().position(myPosition).title("My Location"));
-                mMap.addMarker(new MarkerOptions().position(destination).title(destination_name));
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(destination, 14.0f));
 
-                if (myPosition != null) {
-                    setProgressDialog("Fetching Route Data");
-                    route();
-                }
+                    destination = place.getLatLng();
+                    destination_name = place.getName().toString();
+                    mMap.clear();
+                    if (myPosition != null)
+                        mMap.addMarker(new MarkerOptions().position(myPosition).title("My Location"));
+                    mMap.addMarker(new MarkerOptions().position(destination).title(destination_name).icon(BitmapDescriptorFactory.fromResource(R.drawable.home_pin)));
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(destination, 14.0f));
+
+                    if (myPosition != null) {
+                        setProgressDialog("Fetching Route Data");
+                        route();
+                    }
+
             }
 
             @Override
@@ -182,8 +215,19 @@ public class Navigation extends AppCompatActivity implements OnMapReadyCallback,
 
     @Override
     public void onRoutingFailure(RouteException e) {
-        ///route();
+        //route();
         Log.e("Error", e.getMessage());
+        dialog.dismiss();
+        setMessage(e.getMessage());
+
+        failedRoute = true;
+        mataraLatLngGenerator = new MataraLatLngGenerator();
+        myPosition = mataraLatLngGenerator.getStartPoint();
+        destination = mataraLatLngGenerator.getDestination();
+        MapController.drawPolyline(getApplicationContext(),mataraLatLngGenerator.getGeneratedList(),R.color.colorPrimaryDark,mMap);
+
+        setProgressDialog("Fetching Incident Data");
+        showStaticIncidentData();
     }
 
     @Override
@@ -195,6 +239,7 @@ public class Navigation extends AppCompatActivity implements OnMapReadyCallback,
     public void onRoutingSuccess(ArrayList<Route> routes, int shortestRouteIndex) {
         polylines.clear();
         routeHashMap.clear();
+        /**Get shortest path as selected path*/
         selected_path = routes.get(shortestRouteIndex);
         showRealtimeData(selected_path);
         for (int i = 0; i < routes.size(); i++) {
@@ -245,6 +290,27 @@ public class Navigation extends AppCompatActivity implements OnMapReadyCallback,
                 mMap.addMarker(new MarkerOptions().position(destination).title(destination_name).icon(BitmapDescriptorFactory.fromResource(R.drawable.home_pin)));
             }
         });
+
+
+        /////////////////
+        /*mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng latLng) {
+                mMap.addMarker(new MarkerOptions().position(latLng));
+                mataraList.add(latLng);
+            }
+        });
+
+        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                mataraList.remove(mataraList.indexOf(marker.getPosition()));
+                marker.remove();
+                return false;
+            }
+        });*/
+
+        ///////////////////
     }
 
     private void setProgressDialog(String message) {
@@ -280,7 +346,7 @@ public class Navigation extends AppCompatActivity implements OnMapReadyCallback,
         isReroute = getIntent().getBooleanExtra("isReroute", false);
         database = FirebaseDatabase.getInstance();
         myRef = database.getReference().child("RT-Incidents");
-        token = MapController.getToken(getApplicationContext());
+
 
         if (isReroute) {
             myLocLat = getIntent().getDoubleExtra("myLocLat", 0);
@@ -310,6 +376,7 @@ public class Navigation extends AppCompatActivity implements OnMapReadyCallback,
 
     }
 
+    /**Notify the user about the number of incident data related to selected route*/
     private void showPathInfoDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(Navigation.this, R.style.Theme_AppCompat_Dialog_Alert);
         View view_dialog = getLayoutInflater().inflate(R.layout.choose_best_route_fragment, null);
@@ -323,8 +390,13 @@ public class Navigation extends AppCompatActivity implements OnMapReadyCallback,
         final TextView txt_traffic = view_dialog.findViewById(R.id.txt_trafficSigns);
         TextView btn_navigate = view_dialog.findViewById(R.id.btn_route_navigate);
 
-        txt_totalDistance.setText(selected_path.getDistanceText());
-        txt_totalDuration.setText(selected_path.getDurationText());
+        if(failedRoute){
+            txt_totalDistance.setText("3.4km");
+            txt_totalDuration.setText("8 min");
+        }else {
+            txt_totalDistance.setText(selected_path.getDistanceText());
+            txt_totalDuration.setText(selected_path.getDurationText());
+        }
         txt_realtime_Incident.setText("" + realtime_incidents);
         txt_blackspots.setText("" + blackspots);
         txtcriticalLocation.setText("" + critical);
@@ -333,8 +405,14 @@ public class Navigation extends AppCompatActivity implements OnMapReadyCallback,
 
 
         final Intent intent = new Intent(getApplicationContext(), MapsNavigate.class);
-        RouteInfo routeInfo = new RouteInfo(myPosition, destination, selected_path.getPoints(), destination_name,
-                selected_path.getDistanceValue(), selected_path.getDurationValue());
+        RouteInfo routeInfo;
+
+        if(failedRoute)
+            routeInfo = new RouteInfo(mataraLatLngGenerator.getStartPoint(), mataraLatLngGenerator.getDestination(),mataraLatLngGenerator.getGeneratedList(), "Nilwala Gate Bus Stop",
+                    94000, 1080);
+        else
+            routeInfo = new RouteInfo(myPosition, destination, selected_path.getPoints(), destination_name,
+                    selected_path.getDistanceValue(), selected_path.getDurationValue());
 
         //Static Filter
         if (!isBlackspotEnabled)
@@ -349,6 +427,7 @@ public class Navigation extends AppCompatActivity implements OnMapReadyCallback,
         //Static Data Class
         String static_data = new Gson().toJson(statics_data);
         String route_data = new Gson().toJson(routeInfo);
+        intent.putExtra("token",token);
         intent.putExtra("route", route_data);
         intent.putExtra("staticdata", static_data);
 
@@ -383,21 +462,30 @@ public class Navigation extends AppCompatActivity implements OnMapReadyCallback,
         routing.execute();
     }
 
+    /**Request static location data from server using REST APIs**/
     private void showStaticIncidentData() {
         ArrayList<RouteRequest> requestList = new ArrayList<>();
-        for (LatLng point : selected_path.getPoints())
-            requestList.add(new RouteRequest(point.latitude, point.longitude));
+
+        if(failedRoute){
+            for (LatLng point : mataraLatLngGenerator.getGeneratedList())
+                requestList.add(new RouteRequest(point.latitude, point.longitude));
+        }else {
+            for (LatLng point : selected_path.getPoints())
+                requestList.add(new RouteRequest(point.latitude, point.longitude));
+        }
 
         Call<StaticIncidentData> call = restInterface.getStaticDataSet(requestList);
         call.enqueue(new Callback<StaticIncidentData>() {
             @Override
             public void onResponse(Call<StaticIncidentData> call, Response<StaticIncidentData> response) {
                 if (response.body() != null) {
-                    statics_data = response.body();
-                    blackspots = statics_data.getBlackSpots().size();
-                    critical = statics_data.getCriticalPoints().size();
-                    speedpoints = statics_data.getSpeedLimits().size();
-                    traffic = statics_data.getRoadSigns().size();
+                    try {
+                        statics_data = response.body();
+                        blackspots = statics_data.getBlackSpots().size();
+                        critical = statics_data.getCriticalPoints().size();
+                        speedpoints = statics_data.getSpeedLimits().size();
+                        traffic = statics_data.getRoadSigns().size();
+                    }catch (Exception ex){}
                 }
                 showPathInfoDialog();
                 dialog.dismiss();
@@ -405,13 +493,14 @@ public class Navigation extends AppCompatActivity implements OnMapReadyCallback,
 
             @Override
             public void onFailure(Call<StaticIncidentData> call, Throwable t) {
-                setMessage("Connection failed! Try again");
+                setMessage("Error : " + t.getMessage());
                 dialog.dismiss();
             }
         });
 
     }
 
+    /**Request real-time location data from Google Firebase**/
     private void showRealtimeData(final Route route) {
         realtime_incidents = 0;
         myRef.addValueEventListener(new ValueEventListener() {

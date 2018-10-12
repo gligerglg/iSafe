@@ -1,53 +1,57 @@
 package REST_Controller;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
 import java.util.Date;
 
 public class RestRTIncident {
-    private double latitude;
-    private double longitude;
-
-    private Date date;
-    private String accidentDesc;
+    @SerializedName("latitude")
+    @Expose
+    private Double latitude;
+    @SerializedName("longitude")
+    @Expose
+    private Double longitude;
+    @SerializedName("date")
+    @Expose
+    private String date;
+    @SerializedName("accidentType")
+    @Expose
     private String accidentType;
+    @SerializedName("accidentDesc")
+    @Expose
+    private String accidentDesc;
 
-    public RestRTIncident(double latitude, double longitude, Date date, String accidentDesc, String accidentType) {
+    public RestRTIncident(Double latitude, Double longitude, String date, String accidentType, String accidentDesc) {
         this.latitude = latitude;
         this.longitude = longitude;
         this.date = date;
-        this.accidentDesc = accidentDesc;
         this.accidentType = accidentType;
+        this.accidentDesc = accidentDesc;
     }
 
-    public double getLatitude() {
+    public Double getLatitude() {
         return latitude;
     }
 
-    public void setLatitude(double latitude) {
+    public void setLatitude(Double latitude) {
         this.latitude = latitude;
     }
 
-    public double getLongitude() {
+    public Double getLongitude() {
         return longitude;
     }
 
-    public void setLongitude(double longitude) {
+    public void setLongitude(Double longitude) {
         this.longitude = longitude;
     }
 
-    public Date getDate() {
+    public String getDate() {
         return date;
     }
 
-    public void setDate(Date date) {
+    public void setDate(String date) {
         this.date = date;
-    }
-
-    public String getAccidentDesc() {
-        return accidentDesc;
-    }
-
-    public void setAccidentDesc(String accidentDesc) {
-        this.accidentDesc = accidentDesc;
     }
 
     public String getAccidentType() {
@@ -56,5 +60,13 @@ public class RestRTIncident {
 
     public void setAccidentType(String accidentType) {
         this.accidentType = accidentType;
+    }
+
+    public String getAccidentDesc() {
+        return accidentDesc;
+    }
+
+    public void setAccidentDesc(String accidentDesc) {
+        this.accidentDesc = accidentDesc;
     }
 }

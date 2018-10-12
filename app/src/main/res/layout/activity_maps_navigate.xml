@@ -214,23 +214,21 @@
         android:src="@drawable/ic_drag_enable"
         />
 
-    <!--
-    <TextView
+    <!--<TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/txt_googleSpeed"
         android:textSize="20sp"
         android:text="Google Speed"
         android:layout_gravity="bottom|end"
-        android:layout_margin="10dp"/>
+        android:layout_margin="10dp"/>-->
 
-    <TextView
+    <!--<TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/txt_androidspeed"
         android:textSize="20sp"
         android:text="Android Speed"
         android:layout_gravity="bottom|start"
-        android:layout_margin="10dp"/>
--->
+        android:layout_margin="10dp"/>-->
 </android.support.design.widget.CoordinatorLayout>

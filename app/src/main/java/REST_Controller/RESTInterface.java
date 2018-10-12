@@ -51,4 +51,13 @@ public interface RESTInterface {
     @POST("open/token")
     Call<LoginResponse> loginUser(@Body LoginRequest request);
 
+    @Headers("Content-Type: application/json")
+    @POST("open/addUrls")
+    Call<Void> updateProfileData(@Body UploadURLRequest urlRequest);
+
+    @Headers("Content-Type: application/json")
+    @POST("/user/accDetails")
+    Call<ProfileResponse> getProfileData(@Header("Authorization") String token);
+
+
 }

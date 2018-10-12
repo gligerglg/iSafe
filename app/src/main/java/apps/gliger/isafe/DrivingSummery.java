@@ -80,7 +80,6 @@ public class DrivingSummery extends AppCompatActivity implements OnMapReadyCallb
             totalTime = summeryInfo.getTotal_time();
         }
 
-        token = MapController.getToken(getApplicationContext());
         tripDB = Room.databaseBuilder(getApplicationContext(), TripDB.class, "TripDB").fallbackToDestructiveMigration()
                 .allowMainThreadQueries()
                 .build();

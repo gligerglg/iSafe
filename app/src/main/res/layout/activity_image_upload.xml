@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".ImageUploadActivity"
     android:weightSum="10"
+    android:id="@+id/layout_image_upload"
     android:orientation="vertical">
 
     <ScrollView
@@ -40,7 +41,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="10dp"
-                    android:text="National ID Image"
+                    android:text="National ID Image (Front Side)"
                     android:textColor="@color/colorPrimaryDark"
                     android:textSize="22sp" />
 
@@ -60,6 +61,6 @@
         android:textColor="#fff"
         android:layout_height="0dp"
         android:layout_width="match_parent"
-        android:text="Register User" />
+        android:text="Upload and Finish" />
 
 </LinearLayout>

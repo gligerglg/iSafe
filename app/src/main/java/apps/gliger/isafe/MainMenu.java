@@ -7,6 +7,7 @@ import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageButton;
@@ -19,11 +20,13 @@ import rx.functions.Action1;
 
 public class MainMenu extends AppCompatActivity {
 
-    private ImageButton btn_navigation, btn_neabyIncident, btn_history, btn_profile, btn_settings, btn_logout;
+    private ImageButton btn_navigation, btn_neabyIncident, btn_history, btn_profile, btn_settings;
     private TripDB tripDB;
     private ConstraintLayout layout;
     private SharedPreferences sharedPref;
     private SharedPreferences.Editor editor;
+    private String token="";
+    private Intent intent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,10 +35,13 @@ public class MainMenu extends AppCompatActivity {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main_menu);
 
+        token = getIntent().getStringExtra("token");
         initializeConponents();
         initializeMethods();
+
     }
 
+    /**Initialze component**/
     private void initializeConponents() {
         layout = findViewById(R.id.layout_home);
         btn_navigation = findViewById(R.id.btn_mnu_navigate);
@@ -43,7 +49,6 @@ public class MainMenu extends AppCompatActivity {
         btn_history = findViewById(R.id.btn_mnu_history);
         btn_profile = findViewById(R.id.btn_mnu_profile);
         btn_settings = findViewById(R.id.btn_mnu_settings);
-        btn_logout = findViewById(R.id.btn_mnu_logout);
         sharedPref = getSharedPreferences("iSafe_settings", 0);
         editor = sharedPref.edit();
 
@@ -52,14 +57,18 @@ public class MainMenu extends AppCompatActivity {
                 .build();
     }
 
+    /**Initialize methods**/
     private void initializeMethods() {
         btn_navigation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(MainMenu.this, Navigation.class));
+                intent = new Intent(MainMenu.this,Navigation.class);
+                intent.putExtra("token",token);
+                startActivity(intent);
             }
         });
 
+        /**start settings activity**/
         btn_settings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -67,37 +76,49 @@ public class MainMenu extends AppCompatActivity {
             }
         });
 
+        /**start nearby activity**/
         btn_neabyIncident.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(MainMenu.this, NearbyMap.class));
+                if(token!=null) {
+                    intent = new Intent(MainMenu.this,NearbyMap.class);
+                    intent.putExtra("token",token);
+                    startActivity(intent);
+                }else {
+                setMessage("Please login to access this service");
+            }
             }
         });
 
+        /**Start driving history activity**/
         btn_history.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (tripDB.tripDao().getAllTrips().size() == 0)
-                    setMessage("No Records Found!");
-                else
-                    startActivity(new Intent(MainMenu.this, DriverHistory.class));
+                if(token!=null) {
+                    if (tripDB.tripDao().getAllTrips().size() == 0)
+                        setMessage("No Records Found!");
+                    else {
+                        intent = new Intent(MainMenu.this,DriverHistory.class);
+                        intent.putExtra("token",token);
+                        startActivity(intent);
+                    }
+                }else {
+                setMessage("Please login to access this service");
+            }
             }
         });
 
+        /**start profile activity**/
         btn_profile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(MainMenu.this, ProfileActivity.class));
-            }
-        });
-
-        btn_logout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                editor.putBoolean("staylogin",false);
-                editor.commit();
-                startActivity(new Intent(getApplicationContext(),LoginActivity.class));
-                finish();
+                if(token!=null) {
+                    intent = new Intent(MainMenu.this,ProfileActivity.class);
+                    intent.putExtra("token",token);
+                    startActivity(intent);
+                }
+                else
+                    setMessage("Please login to access this service");
             }
         });
     }

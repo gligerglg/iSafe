@@ -81,7 +81,6 @@
         android:id="@+id/layout_mnu_incident"
         android:layout_width="100dp"
         android:layout_height="100dp"
-        android:layout_marginBottom="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:orientation="vertical"
@@ -113,10 +112,11 @@
         android:id="@+id/layout_mnu_history"
         android:layout_width="100dp"
         android:layout_height="100dp"
+        android:layout_marginBottom="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:orientation="vertical"
-        app:layout_constraintBottom_toTopOf="@+id/layout_mnu_logout"
+        app:layout_constraintBottom_toTopOf="@+id/layout_mnu_settings"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/layout_mnu_incident"
@@ -179,7 +179,7 @@
         android:layout_marginTop="8dp"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/layout_mnu_logout"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/layout_mnu_profile"
         app:layout_constraintTop_toBottomOf="@+id/layout_mnu_incident">
@@ -199,37 +199,6 @@
             android:layout_margin="5dp"
             android:gravity="center"
             android:text="Settings"
-            android:textColor="@color/colorPrimaryDark" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/layout_mnu_logout"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginTop="8dp"
-        android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/layout_mnu_settings"
-        app:layout_constraintTop_toBottomOf="@+id/layout_mnu_history">
-
-        <ImageButton
-            android:id="@+id/btn_mnu_logout"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:background="@android:color/transparent"
-            android:src="@mipmap/ic_laogout" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_margin="5dp"
-            android:gravity="center"
-            android:text="Logout"
             android:textColor="@color/colorPrimaryDark" />
     </LinearLayout>
 

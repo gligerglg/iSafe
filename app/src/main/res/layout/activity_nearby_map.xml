@@ -122,7 +122,7 @@
                         android:layout_gravity="center"
                         android:layout_margin="5dp"
                         android:gravity="center"
-                        android:text="Speed\nLimits"
+                        android:text="Traffic Signs\nLocations"
                         android:textColor="@color/colorPrimaryDark" />
                 </LinearLayout>
 
@@ -156,7 +156,7 @@
                         android:layout_gravity="center"
                         android:layout_margin="5dp"
                         android:gravity="center"
-                        android:text="Speed Limit\nLocations"
+                        android:text="Speed Limits\nLocations"
                         android:textColor="@color/colorPrimaryDark" />
                 </LinearLayout>
 

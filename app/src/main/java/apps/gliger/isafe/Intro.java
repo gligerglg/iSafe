@@ -76,6 +76,7 @@ public class Intro extends AppIntro {
 
     }
 
+    /**Set runtime permission**/
     private void getPermission() {
         try {
             PermissionsManager.init(this);

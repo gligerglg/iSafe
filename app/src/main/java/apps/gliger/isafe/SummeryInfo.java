@@ -33,6 +33,7 @@ public class SummeryInfo {
         this.isEndJourney = isEndJourney;
     }
 
+    /**getters and setters**/
     public LatLng getStart_location() {
         return start_location;
     }

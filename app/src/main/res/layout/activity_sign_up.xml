@@ -109,7 +109,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_marginTop="8dp"
-                    android:hint="Date of Birth"
+                    android:hint="Date of Birth (YYYY-MM-DD)"
                     android:inputType="date"
                     android:textColorHint="@color/colorPrimary" />
             </android.support.design.widget.TextInputLayout>
@@ -228,7 +228,7 @@
                     android:id="@+id/dateofissue"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:hint="Date Of Issue"
+                    android:hint="Date Of Issue (YYYY-MM-DD)"
                     android:inputType="datetime"
                     android:textColorHint="@color/colorPrimary" />
 
@@ -245,7 +245,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_marginTop="8dp"
-                    android:hint="Date of Expire"
+                    android:hint="Date of Expire (YYYY-MM-DD)"
                     android:inputType="date"
                     android:textColorHint="@color/colorPrimary" />
             </android.support.design.widget.TextInputLayout>
@@ -262,7 +262,7 @@
         android:layout_height="0dp"
         android:background="@color/colorPrimaryDark"
         android:textColor="#fff"
-        android:text="Next Step"
+        android:text="Register User"
         />
 
 </LinearLayout>
